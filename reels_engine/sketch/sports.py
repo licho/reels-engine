@@ -590,3 +590,6 @@ def baseball_player(img, x, y, s=1.0, mood="smug", arms=("down", "up"), look=0.0
 def referee(img, x, y, s=1.0, mood="angry", arms=("hip", "up"), look=0.0, card="yellow", seed=1):
     """doodle as a referee: black-and-white striped shirt, whistle, black shorts; card = yellow/red/None in the raised hand."""
     return _kit(img, x, y, s, "referee", mood, arms, look, WHITE, None, seed, card=card)
+
+from . import cache_pieces
+cache_pieces(globals())

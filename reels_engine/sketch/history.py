@@ -796,3 +796,6 @@ def stela(img, cx, base, h=380, seed=1, shadow=False):
                 p.shape(ellipse(gx - w * .05, gy - h * .015, w * .045, w * .045, n=10), None, w=2.5, color=MESO_D, amp=.2)
                 p.stroke([(gx - w * .1, gy + h * .03), (gx + w * .1, gy + h * .03)], 2.5, MESO_D, amp=.2)
                 p.stroke([(gx + w * .05, gy - h * .04), (gx + w * .08, gy + h * .01)], 2.5, MESO_D, amp=.2)
+
+from . import cache_pieces
+cache_pieces(globals())

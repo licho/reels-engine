@@ -475,3 +475,6 @@ def balloon(img, cx, cy, r=110, label="%", color=RED, string=True, seed=1):
                         (cx - r * .55, cy + r * .75), (cx - r * .9, cy - r * .3)], closed=True), color, w=max(3, r * .05))
         p.stroke(spline([(cx - r * .55, cy - r * .3), (cx - r * .45, cy - r * .6), (cx - r * .2, cy - r * .78)]), r * .08, WHITE, amp=.2)
         if label: p.text(str(label), cx, cy + r * .1, r * (.7 if len(str(label)) <= 2 else .4), fill=WHITE, stroke=INK, sw=max(1, r * .015), warp=.6)
+
+from . import cache_pieces
+cache_pieces(globals())

@@ -78,7 +78,7 @@ The [`channel_template/`](channel_template/) folder is a minimal channel that wo
 | `humans` | base character `guy`, `anchors` (head, mouth, hands…), `medal` |
 | `furniture`, `exterior`, `screens` | neutral pieces: furniture, clock, window, house, tree, clouds, lightning, documents, phone chat, monitor, `bar_chart`, `people_grid`… |
 | `cartoon` | cartoon style (separate, see "Styles"): `Brush`, shapes (`jagged`, `spiky_blob`, `blob`, `teardrop`, `strokes`), `humans.buddy`, `exterior.campfire` |
-| `sketch` | sketch style (separate, see "Styles"): `Pen`, `humans.doodle`, money pieces (`bill`, `money_stack`, `money_pile`, `money_jar`, `money_text`), `school_desk`, `hatched_chart`, arrows, `wall_calendar`…; `everyday`: coffee cup, car, motorbike, house, phone and other everyday objects |
+| `sketch` | sketch style (separate, see "Styles"): `Pen`, `humans.doodle`, money pieces (`bill`, `money_stack`, `money_pile`, `money_jar`, `money_text`), `school_desk`, `hatched_chart`, arrows, `wall_calendar`…; `everyday`: coffee cup, car, motorbike, house, phone and other everyday objects; `history`: monuments, weapons, helmets and doodle in Roman/viking/pharaoh/Greek/knight/Aztec/Maya costume; `sports`: balls, gear, awards and doodle as athletes |
 | `registry` | the engine's pieces, ready to merge into the channel's `MAP`s |
 | `lazy`, `catalog` | lazy-loading catalogs and the catalog generator |
 
@@ -153,6 +153,41 @@ sketch_house(img, 760, FLOOR, 340)
 car(img, 330, FLOOR, 400, color=(214, 38, 38))
 coffee_cup(img, 900, FLOOR - 200, 150)
 phone(img, 540, 700, 240, ang=.1)
+```
+
+Ancient history (`reels_engine.sketch.history`): `doodle_roman`, `doodle_viking`, `doodle_pharaoh`, `doodle_greek` and
+`doodle_knight`, `doodle_aztec` and `doodle_maya` dress the doodle (helmet or headdress, armor or robe, and a weapon and shield where it fits: `weapon`
+= gladius, sword, axe, spear, scroll, torch, macuahuitl, corn, cacao or None; `shield=False` to drop it; same `mood`, `arms`, `look` as
+`doodle`). Objects: `pyramid`, `obelisk`, `greek_column` (`broken=True` for a ruin), `temple`, `colosseum`, `castle`,
+`longship`, `amphora`, `scroll`, `torch` (flickers with `t`), `crown`, `laurel_wreath`, `helmet` (viking, roman,
+knight, nemes, laurel, penacho, maya), `sword` (long or gladius), `axe`, `spear`, `round_shield`, `scutum` and `heater_shield`; from Mexico: `step_pyramid`,
+`sun_stone`, `olmec_head`, `stela`, `macuahuitl`, `chimalli`, `corn` and `cacao_pod` (`helmet` also has penacho and
+maya).
+Weapons take the grip point and `ang`, the tilt from straight up in radians. Like the other sketch objects, the
+monuments draw no floor shadow unless `shadow=True`.
+
+```python
+from channel.characters import doodle_roman, doodle_viking
+from channel.props import pyramid, longship
+pyramid(img, 760, FLOOR - 60, 420)
+doodle_roman(img, 260, FLOOR, .9, mood="angry")
+doodle_viking(img, 820, FLOOR, .9, mood="happy", weapon="sword", look=-.4)
+```
+
+Sports (`reels_engine.sketch.sports`): `doodle_soccer_player` (`number`, `ball=True` for a ball at the feet),
+`doodle_basketball_player`, `doodle_boxer`, `doodle_runner` (race bib, headband), `doodle_tennis_player` (racket),
+`doodle_baseball_player` (cap, bat, `mitt=True`) and `doodle_referee` (`card` = yellow, red or None). Same `mood`,
+`arms`, `look` as `doodle`; `color` = team color. Objects: `soccer_ball`, `basketball`, `tennis_ball`, `baseball`,
+`volleyball`, `football` (or `sport_ball(kind=…)`), `tennis_racket`, `baseball_bat`, `boxing_glove`, `dumbbell`,
+`kettlebell`, `sneaker`, `whistle`, `stopwatch`, `cone`, `skateboard`, `jersey` (number and name), `trophy`,
+`sport_medal` (`place` 1, 2 or 3), `podium` (returns where each winner stands), `soccer_goal`, `basketball_hoop`
+(returns the rim center), `scoreboard` and `finish_flag` (flutters with `wave`). No floor shadows unless `shadow=True`.
+
+```python
+from channel.characters import doodle_runner
+from channel.props import podium
+tops = podium(img, 540, FLOOR, 720)
+doodle_runner(img, *tops[1], .6, arms=("up", "up"), number=1)
 ```
 
 ## Camera
@@ -259,6 +294,12 @@ Versions are never rewritten: if something goes wrong, publish another one.
 
 ## Versions
 
+- **v0.9.0** — Ancient history in the sketch style (`reels_engine.sketch.history`): monuments, longship, weapons,
+  shields, helmets and the doodle dressed as a Roman, viking, pharaoh, Greek or knight; Aztecs and Maya (step pyramid,
+  Sun Stone, Olmec head, stela, macuahuitl, chimalli, maize, cacao, Aztec warrior and Maya noble). Sports
+  (`reels_engine.sketch.sports`): balls, gear, trophy, medals, podium, goal, hoop, scoreboard and the doodle as soccer
+  player, basketball player, boxer, runner, tennis player, baseball player or referee. `doodle` gets two new hooks,
+  `dress` and `hat`. Nothing else changes: existing frames are identical.
 - **v0.8.0** — Sketch-style objects no longer draw a floor shadow by default; `shadow=True` brings it back
   (`money_jar` and the everyday objects that stand on the floor). Frames with those objects change (the grey ellipse
   under them is gone); the basic and cartoon styles and the `doodle` character are unchanged.

@@ -10,6 +10,10 @@ CHARACTERS = {
     # sketch style
     "doodle": "reels_engine.sketch.humans", "doodle_anchors": "reels_engine.sketch.humans",
     "doodle_marks": "reels_engine.sketch.humans:marks",
+    **{f"doodle_{k}": f"reels_engine.sketch.history:{k}" for k in ("roman", "viking", "pharaoh", "greek", "knight",
+                                                                     "aztec", "maya")},
+    **{f"doodle_{k}": f"reels_engine.sketch.sports:{k}" for k in ("soccer_player", "basketball_player", "boxer", "runner",
+                                                                    "tennis_player", "baseball_player", "referee")},
 }
 PROPS = {
     # furniture and indoor things
@@ -33,6 +37,18 @@ PROPS = {
                                                           "cloud", "sun", "phone", "tv", "light_bulb", "clock", "shopping_bag",
                                                           "shopping_cart", "credit_card", "coin", "gift_box", "receipt")},
     **{f"sketch_{k}": f"reels_engine.sketch.everyday:{k}" for k in ("house", "building", "tree", "laptop", "piggy_bank")},
+    **{k: f"reels_engine.sketch.history:{k}" for k in ("pyramid", "obelisk", "temple", "colosseum", "castle", "longship", "amphora",
+                                                         "scroll", "torch", "crown", "laurel_wreath", "helmet", "sword", "axe",
+                                                         "spear", "round_shield", "scutum", "heater_shield", "step_pyramid",
+                                                         "sun_stone", "olmec_head", "stela", "macuahuitl", "chimalli", "corn",
+                                                         "cacao_pod")},
+    "greek_column": "reels_engine.sketch.history:column",
+    **{k: f"reels_engine.sketch.sports:{k}" for k in ("soccer_ball", "basketball", "tennis_ball", "baseball", "volleyball",
+                                                        "football", "tennis_racket", "baseball_bat", "boxing_glove", "dumbbell",
+                                                        "kettlebell", "sneaker", "whistle", "stopwatch", "cone", "skateboard",
+                                                        "jersey", "trophy", "podium", "soccer_goal", "basketball_hoop",
+                                                        "scoreboard", "finish_flag")},
+    "sport_ball": "reels_engine.sketch.sports:ball", "sport_medal": "reels_engine.sketch.sports:medal",
 }
 BACKGROUNDS = {
     "make_space": "reels_engine.motion:space_bg", "radial_bg": "reels_engine.motion",

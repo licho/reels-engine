@@ -12,13 +12,13 @@ Un **canal** (por ejemplo `licho/datos-asustan-videos`) es un repo aparte que in
 Requisitos del sistema: Python 3.9+, `ffmpeg` y la fuente DejaVu Sans (`/usr/share/fonts/truetype/dejavu/`).
 
 ```
-pip install "reels-engine[audio] @ git+https://github.com/licho/reels-engine@v0.1.0"
+pip install "reels-engine[audio] @ git+https://github.com/licho/reels-engine@v0.2.0"
 ```
 
 En el canal se fija la versión en `requirements.txt` (siempre con etiqueta, nunca `main`):
 
 ```
-reels-engine[audio] @ git+https://github.com/licho/reels-engine@v0.1.0
+reels-engine[audio] @ git+https://github.com/licho/reels-engine@v0.2.0
 ```
 
 `[audio]` agrega `scipy` (filtros de audio más rápidos). Sin él funciona igual, solo más lento al mezclar.
@@ -74,11 +74,39 @@ La carpeta [`plantilla_canal/`](plantilla_canal/) es un canal mínimo que funcio
 | `audio`, `align` | mezcla voz + efectos + música; sincroniza la voz por silencios |
 | `humanos` | personaje base `guy`, `anchors` (cabeza, boca, manos…), `medal` |
 | `muebles`, `exterior`, `pantallas` | piezas neutras: muebles, reloj, ventana, casa, árbol, nubes, rayo, documentos, chat de celular, monitor, `bar_chart`, `people_grid`… |
+| `caricatura` | estilo caricatura (aparte, ver "Estilos"): `Pincel`, formas (`jagged`, `spiky_blob`, `blob`, `teardrop`, `strokes`), `humanos.monito`, `exterior.fogata` |
 | `registry` | las piezas del motor listas para mezclar en los `MAP` del canal |
 | `lazy`, `catalogo` | catálogos con carga perezosa y generador de `CATALOGO.md` |
 
 Formato del spec, zonas seguras y consejos de animación: ver el `CLAUDE.md` del canal Datos que Asustan, que sigue
 siendo la referencia más completa.
+
+## Estilos
+
+El motor trae dos estilos que se pueden mezclar en un mismo video; ninguno cambia al otro:
+
+- **Básico** (`humanos`, `muebles`, `exterior`, `pantallas`): figuras planas con contorno negro. Las piezas reciben el
+  `ImageDraw` (`d`). Es el que usa Datos que Asustan.
+- **Caricatura** (`reels_engine.caricatura`): orillas suaves (se dibuja al doble y se reduce), tinta café muy oscuro
+  (`Channel.ink`), bordes irregulares y texturas de rayitas. Las piezas reciben la imagen (`img`) porque se pintan en una
+  capa aparte, y avisan su silueta a la revisión automática.
+
+```python
+from canal.personajes import monito
+from canal.props import fogata
+fogata(img, 540, FLOOR - 40, .8, t=c.t)
+a = monito(img, 300, FLOOR, .8, brazos="saluda", mood="risa", pelo="fleco", ropa=(80, 150, 220), t=c.t)
+say(ImageDraw.Draw(img), "¡Hola!", a["mouth"], a["head_r"])
+```
+
+`monito` es la base para armar personajes: `pose` (parado, sentado), `brazos` (abajo, arriba, jarra, saluda, señala,
+pensando, atras, o `(izq, der)`), `mood` (feliz, neutral, triste, sorpresa, enojado, risa, dormido), `pelo` (ninguno,
+fleco, corto), colores de piel/ropa/pelo, y dos ganchos para vestirlo sin redibujar el cuerpo: `vestir(p, a)` (sobre el
+torso, bajo los brazos) y `accesorios(p, a)` (al final). `p` es el `Pincel` y `a` los puntos del cuerpo (cabeza, boca,
+manos, pecho, cadera…). Ejemplo completo: `plantilla_canal/specs/s02_caricatura.py`.
+
+Piezas propias en este estilo: `with Pincel(img, (x0, y0, x1, y1)) as p: p.polygon(...); p.polyline(...)`.
+Ojo con los fondos muy oscuros: la tinta es casi negra (la revisión de contraste lo avisa).
 
 ## Dibujo (pincel)
 
@@ -97,4 +125,7 @@ Las versiones nunca se reescriben: si algo sale mal, se publica otra.
 
 ## Versiones
 
+- **v0.2.0** — Estilo caricatura (`reels_engine.caricatura`): `Pincel`, formas, `monito` (personaje base con poses,
+  caras, pelo y ganchos para vestirlo) y `fogata`. `Channel.ink`. La revisión automática ya ve las piezas pintadas en
+  capa aparte (`check.registrar`). Nada del estilo básico cambia: los cuadros de v0.1.0 salen idénticos.
 - **v0.1.0** — Primera versión, separada de `licho/datos-asustan-videos` (`lib/`) sin cambiar ningún cuadro de sus videos.

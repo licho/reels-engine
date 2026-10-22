@@ -91,6 +91,14 @@ def contrast_issues(rec):
         out.append((msg, bb))
     return out
 
+_REC = [None]                                   # registro activo (para piezas pintadas en una capa aparte)
+
+def registrar(bb, img=None, kind="pieza", label=""):
+    """Las piezas que se pintan en una capa aparte (estilo caricatura) avisan aquí su caja para la revisión."""
+    rec = _REC[0]
+    if rec is None or (img is not None and img.size != (W, H)): return
+    rec.items.append((rec.tag, kind, label, list(bb)))
+
 @contextmanager
 def recording(rec):
     def wrap(name):
@@ -117,8 +125,10 @@ def recording(rec):
             return f(self, xy, *a, **kw)
         return g
     for k in _OPS: setattr(ImageDraw.ImageDraw, k, wrap(k))
+    _REC[0] = rec
     try: yield rec
     finally:
+        _REC[0] = None
         for k in _OPS: setattr(ImageDraw.ImageDraw, k, _orig[k])
 
 def _inter(a, b):

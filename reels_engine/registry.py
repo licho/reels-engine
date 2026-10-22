@@ -5,6 +5,8 @@
 Formato: alias -> "modulo[:nombre_real]"."""
 PERSONAJES = {
     "guy": "reels_engine.humanos", "anchors": "reels_engine.humanos", "medal": "reels_engine.humanos",
+    # estilo caricatura
+    "monito": "reels_engine.caricatura.humanos", "monito_anchors": "reels_engine.caricatura.humanos",
 }
 PROPS = {
     # muebles e interiores
@@ -17,6 +19,8 @@ PROPS = {
     # documentos, pantallas y gráficas
     **{k: f"reels_engine.pantallas:{k}" for k in ("checklist", "document", "phone_chat", "monitor", "people_grid", "thought", "sign_board",
                                                     "heart", "arrow", "ruler", "wanted", "blob_map", "cracks", "bar_chart")},
+    # estilo caricatura
+    "fogata": "reels_engine.caricatura.exterior",
 }
 FONDOS = {
     "make_space": "reels_engine.motion:space_bg", "radial_bg": "reels_engine.motion",

@@ -12,13 +12,13 @@ configuration (colors, zones, output folder…) and adds its own pieces and vide
 System requirements: Python 3.9+, `ffmpeg` and the DejaVu Sans font (`/usr/share/fonts/truetype/dejavu/`).
 
 ```
-pip install "reels-engine[audio] @ git+https://github.com/licho/reels-engine@v0.3.0"
+pip install "reels-engine[audio] @ git+https://github.com/licho/reels-engine@v0.4.0"
 ```
 
 The channel pins the version in `requirements.txt` (always a tag, never `main`):
 
 ```
-reels-engine[audio] @ git+https://github.com/licho/reels-engine@v0.3.0
+reels-engine[audio] @ git+https://github.com/licho/reels-engine@v0.4.0
 ```
 
 `[audio]` adds `scipy` (faster audio filters). It works without it, just slower when mixing.
@@ -69,6 +69,7 @@ The [`channel_template/`](channel_template/) folder is a minimal channel that wo
 | `base` | font `F`, colors, `lerp`/`ease`/`pop`, `chip` (label), `bigtext`, `rich_caption`, `xmark`, `check` |
 | `core` | safe zones, `canvas`, `grad`, bubbles `bubble`/`say`, `fit_font`, `calendar`, `gauge`, `confetti`, `speedlines`, `sparkles`, `follow_btn`, `stamp` |
 | `motion` | easing curves (`back_out`, `elastic_out`…), `tw`, `yoyo`, `shake`, `layer`, `glow`, `radial_bg`, `space_bg`, `vignette`, `sphere_shade`, word-by-word captions |
+| `camera` | camera moves over any image: `Shot`, `film`, `path`, `pan`, `zoom_in`, `zoom_out`, `ken_burns`, `whip`, `handheld`, `impact` (see "Camera") |
 | `produce` | commands text/sheet/preview/check/silent/final, parallel rendering, check cache |
 | `check` | automatic frame check and per-piece contrast |
 | `audio`, `align` | mixes voice + effects + music; syncs the voice by its pauses |
@@ -111,6 +112,28 @@ Full example: `channel_template/specs/s02_cartoon.py`.
 Your own pieces in this style: `with Brush(img, (x0, y0, x1, y1)) as p: p.polygon(...); p.polyline(...)`.
 Careful with very dark backgrounds: the ink is almost black (the contrast check warns about it).
 
+## Camera
+
+`reels_engine.camera` films a "world" image (a scene drawn bigger than the screen, an illustration, or the frame
+itself) and paints the view on the screen or on a box of it. Moves are sub-pixel smooth (no jitter on slow pans).
+
+```python
+from reels_engine.camera import Shot, film, path, pan, zoom_in, zoom_out, ken_burns, whip, handheld, impact
+
+img = Image.new("RGB", (W, H))
+shot = path(c.lt, [(0, Shot(1400, 1300, 1.0)), (1.5, Shot(1750, 1290, 2.5))])   # glide to a face
+view = film(img, world, shot)                    # dst=(x0, y0, x1, y1) to film inside a box
+say(ImageDraw.Draw(img), "Hi!", view.to_screen(mouth), head_r * view.scale)
+```
+
+- `Shot(x, y, zoom=1, angle=0)`: where the camera looks (world px). `zoom=1` is the biggest view that fits inside the
+  world; `2` is twice as close; below 1 shows the world smaller with `fill` around it. `angle` tilts the camera (degrees).
+- Moves (each returns the Shot for time `t`): `path` (keyframes, any mix of pan/zoom/tilt), `pan`, `zoom_in`,
+  `zoom_out`, `ken_burns` (slow, steady), `whip` (very fast, with motion blur).
+- On top of any move: `handheld(shot, t)` (gentle wobble), `impact(shot, t, t0)` (hit or scare shake).
+- `film` returns a `View`: `to_screen(p)` / `to_world(p)` and `scale`, so bubbles and labels follow the camera.
+- Example with every move: `channel_template/specs/s03_camera.py`.
+
 ## Drawing backend
 
 Everything is drawn with Pillow today (`brush="pil"`). The configuration already has the `brush` field to add a vector
@@ -136,7 +159,7 @@ The v0.2.0 cartoon style (`caricatura`, `monito`, `fogata`, `Pincel`) was rename
 1. Change the code and test it with the template (`cd channel_template && python3 -m channel.produce specs/s01_savings.py check`)
    and with at least one real channel (preview + check of all its specs, comparing against the previous frames).
 2. Bump `version` in `pyproject.toml` and `reels_engine/__init__.py`, and note the change below.
-3. Commit, tag and push: `git tag v0.3.0 && git push origin main v0.3.0` (or create a GitHub release with tag `v0.3.0`;
+3. Commit, tag and push: `git tag v0.4.0 && git push origin main v0.4.0` (or create a GitHub release with tag `v0.4.0`;
    the `v` matters).
 4. In each channel, change the tag in `requirements.txt` and reinstall (`pip install -r requirements.txt`).
 
@@ -144,6 +167,9 @@ Versions are never rewritten: if something goes wrong, publish another one.
 
 ## Versions
 
+- **v0.4.0** — Camera (`reels_engine.camera`): pan, zoom in/out, Ken Burns, whip pan with motion blur, tilt,
+  hand-held and impact shake, keyframed paths, and a `View` to place bubbles on the filmed scene. New example
+  `s03_camera.py`. Nothing else changes: existing frames are identical.
 - **v0.3.0** — Everything in English: code, comments, docs, check messages and commands (`text`, `sheet`, `silent`,
   `check-contrast`). Modules renamed (`furniture`, `screens`, `humans`, `catalog`, `cartoon`) and the template is now
   `channel_template/`. The old Spanish names still work (see "Old Spanish names"). No frame changes: the template and

@@ -13,6 +13,6 @@ configure(Channel(
     code_dirs=("channel",),
     catalog_out="channel/CATALOG.md",
     catalog_header=("# My channel's catalog\n", "Generated with `python3 -m channel.catalog`.\n"),
-    catalog_api=(("reels_engine.core", "reels_engine.core"), ("reels_engine.motion", "reels_engine.motion")),
+    catalog_api=(("reels_engine.core", "reels_engine.core"), ("reels_engine.motion", "reels_engine.motion"), ("reels_engine.camera", "reels_engine.camera")),
     catalog_maps=("channel.characters", "channel.props", "channel.backgrounds"),
 ))

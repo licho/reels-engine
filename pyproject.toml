@@ -1,0 +1,17 @@
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "reels-engine"
+version = "0.1.0"
+description = "Motor para producir reels verticales (1080x1920) con código: animación, subtítulos, audio y revisión automática."
+readme = "README.md"
+requires-python = ">=3.9"
+dependencies = ["pillow", "numpy"]
+
+[project.optional-dependencies]
+audio = ["scipy"]
+
+[tool.setuptools]
+packages = ["reels_engine"]

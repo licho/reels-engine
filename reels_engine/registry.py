@@ -48,6 +48,12 @@ PROPS = {
                                                         "kettlebell", "sneaker", "whistle", "stopwatch", "cone", "skateboard",
                                                         "jersey", "trophy", "podium", "soccer_goal", "basketball_hoop",
                                                         "scoreboard", "finish_flag")},
+    **{k: f"reels_engine.sketch.finance:{k}" for k in ("bank", "safe", "atm", "cash_register", "calculator", "gold_bars",
+                                                         "money_bag", "money_tree", "salary_envelope", "price_tag",
+                                                         "percent_badge", "balance_scale", "hourglass", "line_chart",
+                                                         "candle_chart", "pie_chart", "gauge", "contract", "ball_and_chain",
+                                                         "umbrella", "goal_thermometer", "padlock", "magnifier", "rocket",
+                                                         "balloon")},
     "sport_ball": "reels_engine.sketch.sports:ball", "sport_medal": "reels_engine.sketch.sports:medal",
 }
 BACKGROUNDS = {

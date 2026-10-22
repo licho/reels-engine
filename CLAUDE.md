@@ -9,8 +9,9 @@ Dueño: Luis. **Respóndele en español, con explicaciones sencillas (sin jerga 
   Datos que Asustan contra la versión anterior (preview + check de todos los specs; diferencia de píxeles ≈ 0).
 - **Nada propio de un canal aquí**: ni terror, ni marcas, ni textos o piezas de un solo canal. Lo que cambia entre
   canales va en `Channel` (`reels_engine/config.py`); las piezas de un canal viven en el repo del canal.
-- Las piezas nuevas genéricas van en `muebles.py`, `exterior.py`, `pantallas.py` o `humanos.py`, con contorno negro,
-  docstring de una línea y registradas en `registry.py`.
+- Las piezas nuevas genéricas van en `muebles.py`, `exterior.py`, `pantallas.py` o `humanos.py` (estilo básico: reciben
+  `d`, contorno negro) o en `caricatura/` (estilo caricatura: reciben `img`, dibujan con `Pincel` y tinta `INK`). Siempre
+  con docstring de una línea y registradas en `registry.py`. Los estilos no se mezclan dentro de una pieza.
 - Todo módulo que lea la configuración lo hace al importarse (`_cfg = current()`), por eso `configure()` va primero.
 - Commits en español. Versiones: ver "Publicar una versión nueva" en `README.md`.
 

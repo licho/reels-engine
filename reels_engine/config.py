@@ -32,6 +32,7 @@ class Channel:
     caption_stroke: tuple = (0, 0, 0)
     chip_bg: tuple = (225, 35, 45)
     chip_fg: tuple = (255, 255, 255)
+    ink: tuple = (43, 36, 32)                         # tinta (contornos) del estilo caricatura
     # zonas seguras (y en px)
     chip1: int = 300                      # letrero principal
     chip2: int = 420                      # segundo letrero

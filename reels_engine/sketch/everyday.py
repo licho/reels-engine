@@ -367,3 +367,6 @@ def receipt(img, cx, cy, h=260, lines=5, total=None, seed=1):
             y = cy - h * .36 + lines * h * .1 + h * .04
             p.stroke([(cx - w * .36, y - h * .05), (cx + w * .36, y - h * .05)], 3, amp=.3)
             p.text(total, cx + w * .12, y + h * .03, h * .09, warp=0)
+
+from . import cache_pieces
+cache_pieces(globals())

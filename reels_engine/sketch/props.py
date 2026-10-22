@@ -171,3 +171,6 @@ def dashed_line(img, x, y0, y1, dash=22, gap=16, color=(150, 150, 155), seed=1):
         while y < y1:
             p.stroke([(x, y), (x, min(y1, y + dash))], 3, color, amp=.3)
             y += dash + gap
+
+from . import cache_pieces
+cache_pieces(globals())

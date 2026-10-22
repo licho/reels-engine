@@ -154,3 +154,6 @@ def marks(img, head, r, kind="excited", seed=1):
             px, py = cx + r * .95, cy - r * .45
             p.shape([(px, py - 22 * s), (px + 12 * s, py + 4 * s), (px, py + 14 * s), (px - 12 * s, py + 4 * s)],
                     (150, 200, 240), w=4 * s, smooth=True, amp=.4)
+
+from . import cache_pieces
+cache_pieces(globals())

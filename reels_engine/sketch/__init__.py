@@ -17,8 +17,14 @@ Pieces: `humans` (doodle), `props` (money, school, charts), `everyday` (coffee, 
 `finance` (bank, safe, ATM, charts, gauge, contract, debt ball and chain, goal thermometer…).
 
 To draw your own pieces in this style: `with Pen(img, box, seed) as p: p.shape(...); p.stroke(...)`."""
+import copy
+import functools
+import inspect
 import math
+import os
 import random
+import types
+from collections import OrderedDict
 from contextlib import contextmanager
 
 from PIL import Image, ImageDraw, ImageFont
@@ -214,9 +220,68 @@ class Pen:
 
     def paste(self):
         small = self.img.convert("RGBa").resize((self.w, self.h), Image.LANCZOS).convert("RGBA")
-        self.target.paste(small, (self.ox, self.oy), small)
-        bb = small.getbbox()
-        if bb:
-            from ..check import register
-            register((bb[0] + self.ox, bb[1] + self.oy, bb[2] + self.ox, bb[3] + self.oy), self.target)
+        _put(self.target, small, (self.ox, self.oy), small.getbbox())
         return ImageDraw.Draw(self.target)
+
+def _put(target, small, pos, bb):
+    """Pastes a finished layer on the image, reports it to the check and to the piece being recorded (if any)."""
+    target.paste(small, pos, small)
+    if bb:
+        from ..check import register
+        register((bb[0] + pos[0], bb[1] + pos[1], bb[2] + pos[0], bb[3] + pos[1]), target)
+    if _REC: _REC[-1].append((target, small, pos, bb))
+
+# ---------- piece cache ----------
+# With a fixed seed a piece drawn twice with the same arguments gives the same layers, so they're kept and pasted
+# again instead of drawn again (most of a frame repeats from the previous one). The result is pixel-identical.
+# REELS_PIECE_CACHE=0 turns it off; REELS_PIECE_CACHE_MB sets the memory per process (default 300).
+_ON = os.environ.get("REELS_PIECE_CACHE", "1") != "0"
+_LIMIT = int(os.environ.get("REELS_PIECE_CACHE_MB", "300")) << 20
+_CACHE, _SIZE, _REC = OrderedDict(), [0], []
+
+def _freeze(v):
+    """Hashable copy of an argument; TypeError for anything that could change behind our back."""
+    if v is None or isinstance(v, (bool, int, float, str, bytes)): return v
+    if isinstance(v, (tuple, list)): return (type(v).__name__,) + tuple(_freeze(x) for x in v)
+    if isinstance(v, dict): return ("dict",) + tuple(sorted((k, _freeze(x)) for k, x in v.items()))
+    if isinstance(v, (types.FunctionType, types.BuiltinFunctionType)) and not v.__closure__: return v
+    raise TypeError(type(v).__name__)
+
+def cached(fn):
+    """Remembers what a piece pastes (it must only draw through Pen) and repeats it when called again with the same
+    arguments. Every public sketch piece uses it; a channel can use it on its own sketch pieces too."""
+    if getattr(fn, "_cached", False): return fn
+    @functools.wraps(fn)
+    def piece(img, *a, **kw):
+        from ..check import _REC as checking
+        if not _ON or checking[0] is not None: return fn(img, *a, **kw)
+        try:
+            key = (fn.__module__, fn.__qualname__, img.size, img.mode, _freeze(a), _freeze(kw)); hash(key)
+        except TypeError:
+            return fn(img, *a, **kw)
+        hit = _CACHE.get(key)
+        if hit is not None:
+            _CACHE.move_to_end(key)
+            for small, pos, bb in hit[0]: _put(img, small, pos, bb)
+            return copy.deepcopy(hit[1])
+        rec = []; _REC.append(rec)
+        try: out = fn(img, *a, **kw)
+        finally: _REC.pop()
+        if _REC: _REC[-1].extend(rec)                         # a piece inside another piece: the outer one keeps it too
+        if all(t is img for t, *_ in rec):
+            try: ret = copy.deepcopy(out)
+            except Exception: return out
+            _CACHE[key] = ([(s, p, b) for _, s, p, b in rec], ret)
+            _SIZE[0] += sum(s.width * s.height * 4 for _, s, _, _ in rec)
+            while _SIZE[0] > _LIMIT and len(_CACHE) > 1:
+                ops, _ = _CACHE.popitem(last=False)[1]
+                _SIZE[0] -= sum(s.width * s.height * 4 for s, _, _ in ops)
+        return out
+    piece._cached = True
+    return piece
+
+def cache_pieces(ns):
+    """Applies `cached` to every public piece (first argument `img`) defined in a module's namespace."""
+    for k, v in list(ns.items()):
+        if k.startswith("_") or not inspect.isfunction(v) or v.__module__ != ns["__name__"]: continue
+        if next(iter(inspect.signature(v).parameters), "") == "img": ns[k] = cached(v)

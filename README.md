@@ -58,6 +58,7 @@ The [`channel_template/`](channel_template/) folder is a minimal channel that wo
    python3 -m channel.produce specs/s01.py check          # automatic check
    python3 -m channel.produce specs/s01.py silent         # video without voice (music + effects)
    python3 -m channel.produce specs/s01.py final voice.mp3  # final video synced to the voice
+   python3 -m channel.produce specs/s01.py draft          # quick review video (15 frames/s, half size)
    python3 -m channel.catalog                             # regenerates the channel's piece catalog
    python3 -m channel.publish out/s01.mp4 "2026-10-25 19:00" --title "..."   # schedules it on YouTube/Facebook
    ```
@@ -71,7 +72,7 @@ The [`channel_template/`](channel_template/) folder is a minimal channel that wo
 | `core` | safe zones, `canvas`, `grad`, bubbles `bubble`/`say`, `fit_font`, `calendar`, `gauge`, `confetti`, `speedlines`, `sparkles`, `follow_btn`, `stamp` |
 | `motion` | easing curves (`back_out`, `elastic_out`…), `tw`, `yoyo`, `shake`, `layer`, `glow`, `radial_bg`, `space_bg`, `vignette`, `sphere_shade`, word-by-word captions |
 | `camera` | camera moves over any image: `Shot`, `film`, `path`, `pan`, `zoom_in`, `zoom_out`, `ken_burns`, `whip`, `handheld`, `impact` (see "Camera") |
-| `produce` | commands text/sheet/preview/check/silent/final, parallel rendering, check cache |
+| `produce` | commands text/sheet/preview/check/silent/final/draft, parallel rendering, reused parts, check cache |
 | `check` | automatic frame check and per-piece contrast |
 | `publish` | schedules a finished video on YouTube and a Facebook Page at a date and time (see "Scheduling videos") |
 | `audio`, `align` | mixes voice + effects + music; syncs the voice by its pauses |
@@ -299,6 +300,20 @@ changing their code:
 The v0.2.0 cartoon style (`caricatura`, `monito`, `fogata`, `Pincel`) was renamed without aliases (`cartoon`, `buddy`,
 `campfire`, `Brush`): no channel used it yet.
 
+## Rendering speed
+
+- **Parts are reused.** Videos are drawn in parts of up to 4 s (never across two scenes) that are kept in
+  `OUTDIR/.parts/<name>_<command>/`. The next render of the same spec only redraws the parts whose scene function,
+  timing or shared code (the rest of the spec, the channel's modules, the engine, the `Channel` settings) changed;
+  editing one scene redraws only that scene. Add `--fresh` to draw everything again (for example after changing an
+  image file a spec loads).
+- **Sketch pieces are remembered.** With a fixed seed a sketch piece called again with the same arguments pastes the
+  layers it drew the first time instead of drawing them again (pixel-identical). Every public piece in
+  `reels_engine.sketch` does it; wrap a channel's own sketch pieces with `@cached` (from `reels_engine.sketch`) to get
+  the same, as long as they only draw through `Pen`. `REELS_PIECE_CACHE=0` turns it off and
+  `REELS_PIECE_CACHE_MB` sets its memory per process (default 300).
+- **`draft`** renders a review video at 15 frames/s and half size, about half the drawing work.
+
 ## Publishing a new engine version
 
 1. Change the code and test it with the template (`cd channel_template && python3 -m channel.produce specs/s01_savings.py check`)
@@ -312,6 +327,9 @@ Versions are never rewritten: if something goes wrong, publish another one.
 
 ## Versions
 
+- **v0.11.0** — Faster renders: parts of the video are reused between renders when their scene didn't change, sketch
+  pieces are remembered instead of redrawn (about 2x faster drawing on sketch videos), and a new `draft` command.
+  Nothing else changes: existing frames are identical.
 - **v0.10.0** — Economy and personal finance pieces in the sketch style (`reels_engine.sketch.finance`): bank,
   safe, ATM, cash register, calculator, gold bars, money bag and tree, charts (line, candlestick, pie), score gauge,
   contract, debt ball and chain, goal thermometer and more. Nothing else changes: existing frames are identical.

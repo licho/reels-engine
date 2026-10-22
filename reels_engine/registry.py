@@ -7,6 +7,9 @@ CHARACTERS = {
     "guy": "reels_engine.humans", "anchors": "reels_engine.humans", "medal": "reels_engine.humans",
     # cartoon style
     "buddy": "reels_engine.cartoon.humans", "buddy_anchors": "reels_engine.cartoon.humans",
+    # sketch style
+    "doodle": "reels_engine.sketch.humans", "doodle_anchors": "reels_engine.sketch.humans",
+    "doodle_marks": "reels_engine.sketch.humans:marks",
 }
 PROPS = {
     # furniture and indoor things
@@ -21,6 +24,11 @@ PROPS = {
                                                   "heart", "arrow", "ruler", "wanted", "blob_map", "cracks", "bar_chart")},
     # cartoon style
     "campfire": "reels_engine.cartoon.exterior",
+    # sketch style
+    **{k: f"reels_engine.sketch.props:{k}" for k in ("bill", "money_stack", "money_pile", "money_jar", "money_text", "wallet",
+                                                       "school_desk", "stool", "curve_arrow", "hatched_chart",
+                                                       "wall_calendar", "dashed_line")},
+    "block_arrow": "reels_engine.sketch.props:arrow",
 }
 BACKGROUNDS = {
     "make_space": "reels_engine.motion:space_bg", "radial_bg": "reels_engine.motion",

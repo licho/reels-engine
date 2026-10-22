@@ -14,7 +14,8 @@ comments, docs, commits) is in English.
 - **Nothing channel-specific here**: no horror, no brands, no texts or pieces for a single channel. What changes between
   channels goes in `Channel` (`reels_engine/config.py`); a channel's pieces live in the channel's repo.
 - New generic pieces go in `furniture.py`, `exterior.py`, `screens.py` or `humans.py` (basic style: they take `d`, black
-  outline) or in `cartoon/` (cartoon style: they take `img`, draw with `Brush` and `INK`). Always with a one-line
+  outline), in `cartoon/` (cartoon style: they take `img`, draw with `Brush` and `INK`) or in `sketch/` (hand-drawn
+  marker style: they take `img` and `seed`, draw with `Pen`). Always with a one-line
   docstring and registered in `registry.py`. Styles don't mix inside a piece.
 - Every module that reads the configuration does it on import (`_cfg = current()`), so `configure()` goes first.
 - Commits in English. Versions: see "Publishing a new engine version" in `README.md`.

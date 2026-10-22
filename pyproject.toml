@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "reels-engine"
-version = "0.5.0"
+version = "0.6.0"
 description = "Engine to produce vertical reels (1080x1920) with code: animation, captions, audio and automatic checks."
 readme = "README.md"
 requires-python = ">=3.9"
@@ -14,4 +14,4 @@ dependencies = ["pillow", "numpy"]
 audio = ["scipy"]
 
 [tool.setuptools]
-packages = ["reels_engine", "reels_engine.cartoon"]
+packages = ["reels_engine", "reels_engine.cartoon", "reels_engine.sketch"]

@@ -33,6 +33,8 @@ class Channel:
     chip_bg: tuple = (225, 35, 45)
     chip_fg: tuple = (255, 255, 255)
     ink: tuple = (43, 36, 32)                         # ink (outlines) of the cartoon style
+    sketch_ink: tuple = (24, 24, 26)                  # ink of the sketch style
+    sketch_font: str = ""                 # lettering of the sketch style (big amounts); "" = font_bold
     # safe zones (y in px)
     chip1: int = 300                      # main label
     chip2: int = 420                      # second label

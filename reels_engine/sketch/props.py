@@ -1,5 +1,6 @@
 """Sketch-style objects: money (bill, stack, pile, jar, big amount), school desk, stool, wallet, block arrow,
-curved arrow, hatched bar chart, calendar and dashed divider. All take the image (img) and a 'seed'."""
+curved arrow, hatched bar chart, calendar and dashed divider. All take the image (img) and a 'seed'.
+money_jar draws no floor shadow unless shadow=True."""
 import math
 from . import (Pen, WHITE, SHADE, RED, GREEN, GREEN_D, GREEN_L, MONEY, MONEY_D, GLASS, GLASS_D, WOOD, WOOD_D,
                BAND, BLUE, ellipse, rrect, rotated, spline)
@@ -54,11 +55,11 @@ def money_pile(img, cx, base, w=100, rows=(4, 3, 2, 1), seed=1):
             for k in range(n):
                 _brick(p, x0 + k * w + p.rng.uniform(-4, 4), y + p.rng.uniform(-3, 3), w * .96, t)
 
-def money_jar(img, cx, base, w=200, h=280, fill=.8, label=None, seed=1):
+def money_jar(img, cx, base, w=200, h=280, fill=.8, label=None, seed=1, shadow=False):
     """Glass jar sitting on y=base, filled with bills up to 'fill' (0…1); label = text on a white tag."""
     x0, x1, y0 = cx - w / 2, cx + w / 2, base - h
     with Pen(img, (x0 - w * .2, y0 - 10, x1 + w * .2, base + w * .1), seed) as p:
-        p.blob(cx, base, w * .6, w * .07, SHADE)
+        if shadow: p.blob(cx, base, w * .6, w * .07, SHADE)
         body = rrect(x0, y0 + h * .08, x1, base, w * .2)
         p.poly(p.wobble(body, .6, True), GLASS)
         if fill:

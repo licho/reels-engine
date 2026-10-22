@@ -1,22 +1,26 @@
-# reels-engine — guía para sesiones
+# reels-engine — guide for sessions
 
-Motor compartido por varios canales de reels de Luis (Datos que Asustan `licho/datos-asustan-videos`, pixel art y otros).
-Dueño: Luis. **Respóndele en español, con explicaciones sencillas (sin jerga técnica).**
+Engine shared by several of Luis's reel channels (Datos que Asustan `licho/datos-asustan-videos`, pixel art and others).
+Owner: Luis. **Reply to him in Spanish, with simple explanations (no technical jargon).** The repo itself (code,
+comments, docs, commits) is in English.
 
-## Reglas
-- **No romper canales.** Los canales fijan una versión (`@vX.Y.Z`). Cualquier cambio que altere cómo se ve un cuadro
-  existente es un cambio de versión mayor y hay que avisarle a Luis. Antes de etiquetar, compara cuadros de los specs de
-  Datos que Asustan contra la versión anterior (preview + check de todos los specs; diferencia de píxeles ≈ 0).
-- **Nada propio de un canal aquí**: ni terror, ni marcas, ni textos o piezas de un solo canal. Lo que cambia entre
-  canales va en `Channel` (`reels_engine/config.py`); las piezas de un canal viven en el repo del canal.
-- Las piezas nuevas genéricas van en `muebles.py`, `exterior.py`, `pantallas.py` o `humanos.py` (estilo básico: reciben
-  `d`, contorno negro) o en `caricatura/` (estilo caricatura: reciben `img`, dibujan con `Pincel` y tinta `INK`). Siempre
-  con docstring de una línea y registradas en `registry.py`. Los estilos no se mezclan dentro de una pieza.
-- Todo módulo que lea la configuración lo hace al importarse (`_cfg = current()`), por eso `configure()` va primero.
-- Commits en español. Versiones: ver "Publicar una versión nueva" en `README.md`.
+## Rules
+- **Don't break channels.** Channels pin a version (`@vX.Y.Z`). Any change that alters how an existing frame looks is a
+  major version change and Luis must be told. Before tagging, compare frames of the Datos que Asustan specs against the
+  previous version (preview + check of every spec; pixel difference ≈ 0).
+- **Old Spanish names stay working** (`muebles`, `pantallas`, `humanos`, `catalogo`, `PERSONAJES`, `FONDOS`, the
+  `texto`/`hoja`/`sinvoz`/`check-contraste` commands, `chair(kind="silla"|"oficina")`): channels still use them.
+  Remove them only in a major version, after updating the channels.
+- **Nothing channel-specific here**: no horror, no brands, no texts or pieces for a single channel. What changes between
+  channels goes in `Channel` (`reels_engine/config.py`); a channel's pieces live in the channel's repo.
+- New generic pieces go in `furniture.py`, `exterior.py`, `screens.py` or `humans.py` (basic style: they take `d`, black
+  outline) or in `cartoon/` (cartoon style: they take `img`, draw with `Brush` and `INK`). Always with a one-line
+  docstring and registered in `registry.py`. Styles don't mix inside a piece.
+- Every module that reads the configuration does it on import (`_cfg = current()`), so `configure()` goes first.
+- Commits in English. Versions: see "Publishing a new engine version" in `README.md`.
 
-## Probar
+## Test
 ```
 pip install -e ".[audio]"
-cd plantilla_canal && python3 -m canal.produce specs/s01_ahorro.py check && python3 -m canal.produce specs/s01_ahorro.py preview 1 4 7 9
+cd channel_template && python3 -m channel.produce specs/s01_savings.py check && python3 -m channel.produce specs/s01_savings.py preview 1 4 7 9
 ```

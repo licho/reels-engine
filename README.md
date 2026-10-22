@@ -1,131 +1,154 @@
 # reels-engine
 
-Motor para producir reels verticales (1080x1920) con código: escenas dibujadas con Pillow, animación tipo GSAP,
-subtítulos palabra por palabra, globos de diálogo que se acomodan solos, audio (voz + efectos + música generada),
-sincronización con la voz y revisión automática de cada cuadro (subtítulos tapados, textos cortados o encimados, contraste).
+Engine to produce vertical reels (1080x1920) with code: scenes drawn with Pillow, GSAP-style animation,
+word-by-word captions, speech bubbles that place themselves, audio (voice + effects + generated music),
+voice sync and an automatic check of every frame (covered captions, cut or overlapping texts, contrast).
 
-Un **canal** (por ejemplo `licho/datos-asustan-videos`) es un repo aparte que instala este motor, pone su configuración
-(colores, zonas, carpeta de salida…) y agrega sus propias piezas y videos.
+A **channel** (for example `licho/datos-asustan-videos`) is a separate repo that installs this engine, sets its
+configuration (colors, zones, output folder…) and adds its own pieces and videos.
 
-## Instalar
+## Install
 
-Requisitos del sistema: Python 3.9+, `ffmpeg` y la fuente DejaVu Sans (`/usr/share/fonts/truetype/dejavu/`).
-
-```
-pip install "reels-engine[audio] @ git+https://github.com/licho/reels-engine@v0.2.0"
-```
-
-En el canal se fija la versión en `requirements.txt` (siempre con etiqueta, nunca `main`):
+System requirements: Python 3.9+, `ffmpeg` and the DejaVu Sans font (`/usr/share/fonts/truetype/dejavu/`).
 
 ```
-reels-engine[audio] @ git+https://github.com/licho/reels-engine@v0.2.0
+pip install "reels-engine[audio] @ git+https://github.com/licho/reels-engine@v0.3.0"
 ```
 
-`[audio]` agrega `scipy` (filtros de audio más rápidos). Sin él funciona igual, solo más lento al mezclar.
+The channel pins the version in `requirements.txt` (always a tag, never `main`):
 
-## Crear un canal nuevo desde cero
+```
+reels-engine[audio] @ git+https://github.com/licho/reels-engine@v0.3.0
+```
 
-La carpeta [`plantilla_canal/`](plantilla_canal/) es un canal mínimo que funciona tal cual. Para empezar uno nuevo:
+`[audio]` adds `scipy` (faster audio filters). It works without it, just slower when mixing.
 
-1. **Crea el repo del canal** y copia ahí el contenido de `plantilla_canal/` (la carpeta `canal/` y `specs/`).
-   Agrega un `requirements.txt` con la línea de arriba e instala: `pip install -r requirements.txt`.
-2. **Configura el canal** en `canal/__init__.py`. Todo es opcional; lo que no pongas toma el valor por defecto:
+## Create a new channel from scratch
+
+The [`channel_template/`](channel_template/) folder is a minimal channel that works as is. To start a new one:
+
+1. **Create the channel repo** and copy the contents of `channel_template/` into it (the `channel/` and `specs/` folders).
+   Add a `requirements.txt` with the line above and install: `pip install -r requirements.txt`.
+2. **Configure the channel** in `channel/__init__.py`. Everything is optional; whatever you leave out takes the default:
    ```python
    configure(Channel(
-       name="finanzas",
+       name="finance",
        root=ROOT,
-       outdir="/tmp/finanzas_out",           # dónde salen previews y videos
-       font_bold="/ruta/a/MiFuente-Bold.ttf",
-       caption_highlight=(80, 220, 120),     # color de las palabras *resaltadas*
-       chip_bg=(30, 110, 210),               # color de los letreros
-       vignette=0,                           # sin viñeta
-       wps=2.6,                              # velocidad de lectura (palabras por segundo)
-       music=("pad", [], None),              # música por defecto
+       outdir="/tmp/finance_out",            # where previews and videos go
+       font_bold="/path/to/MyFont-Bold.ttf",
+       caption_highlight=(80, 220, 120),     # color of *highlighted* words
+       chip_bg=(30, 110, 210),               # label color
+       vignette=0,                           # no vignette
+       wps=2.6,                              # reading speed (words per second)
+       music=("pad", [], None),              # default music
    ))
    ```
-   La lista completa (zonas seguras, subtítulos, umbrales de la revisión, catálogo, estilos de música extra…) está
-   comentada en [`reels_engine/config.py`](reels_engine/config.py). `configure()` debe correr **antes** de importar el
-   resto del motor; por eso va en el `__init__.py` del paquete del canal y cada comando del canal importa ese paquete primero.
-3. **Piezas propias**: dibújalas en `canal/piezas.py` (o en varios módulos) y regístralas en `canal/props.py`,
-   `canal/personajes.py` o `canal/fondos.py`, en el diccionario `MAP` (`alias -> "modulo[:nombre]"`). Los MAP empiezan
-   con las piezas del motor (`registry.PROPS`, `registry.PERSONAJES`, `registry.FONDOS`) y se les suman las del canal.
-4. **Primer video**: copia `specs/s01_ahorro.py`, cambia `NAME`, `LINES`, las funciones de escena, `SCENES`, `SFX` y `MUSIC`.
-5. **Comandos** (desde la raíz del canal):
+   The full list (safe zones, captions, check thresholds, catalog, extra music styles…) is commented in
+   [`reels_engine/config.py`](reels_engine/config.py). `configure()` must run **before** importing the rest of the
+   engine; that's why it lives in the channel package's `__init__.py` and every channel command imports that package first.
+3. **Your own pieces**: draw them in `channel/pieces.py` (or several modules) and register them in `channel/props.py`,
+   `channel/characters.py` or `channel/backgrounds.py`, in the `MAP` dict (`alias -> "module[:name]"`). The MAPs start
+   with the engine's pieces (`registry.PROPS`, `registry.CHARACTERS`, `registry.BACKGROUNDS`) plus the channel's.
+4. **First video**: copy `specs/s01_savings.py` and change `NAME`, `LINES`, the scene functions, `SCENES`, `SFX` and `MUSIC`.
+5. **Commands** (from the channel root):
    ```
-   python3 -m canal.produce specs/s01.py texto          # texto para la voz + duración estimada
-   python3 -m canal.produce specs/s01.py hoja           # hoja de cuadros para revisar composición
-   python3 -m canal.produce specs/s01.py preview 2 6 10 # cuadros sueltos (segundos)
-   python3 -m canal.produce specs/s01.py check          # revisión automática
-   python3 -m canal.produce specs/s01.py sinvoz         # video sin voz (música + efectos)
-   python3 -m canal.produce specs/s01.py final voz.mp3  # video final sincronizado con la voz
-   python3 -m canal.catalogo                            # regenera el catálogo de piezas del canal
+   python3 -m channel.produce specs/s01.py text           # text for the voice + estimated duration
+   python3 -m channel.produce specs/s01.py sheet          # frame sheet to review the composition
+   python3 -m channel.produce specs/s01.py preview 2 6 10 # single frames (seconds)
+   python3 -m channel.produce specs/s01.py check          # automatic check
+   python3 -m channel.produce specs/s01.py silent         # video without voice (music + effects)
+   python3 -m channel.produce specs/s01.py final voice.mp3  # final video synced to the voice
+   python3 -m channel.catalog                             # regenerates the channel's piece catalog
    ```
 
-## Qué trae el motor
+## What the engine includes
 
-| Módulo | Qué es |
+| Module | What it is |
 |---|---|
-| `config` | `Channel` (configuración del canal) y `configure()` |
-| `base` | fuente `F`, colores, `lerp`/`ease`/`pop`, `chip` (letrero), `bigtext`, `rich_caption`, `xmark`, `check` |
-| `core` | zonas seguras, `canvas`, `grad`, globos `bubble`/`say`, `fit_font`, `calendar`, `gauge`, `confetti`, `speedlines`, `sparkles`, `follow_btn`, `stamp` |
-| `motion` | curvas (`back_out`, `elastic_out`…), `tw`, `yoyo`, `shake`, `layer`, `glow`, `radial_bg`, `space_bg`, `vignette`, `sphere_shade`, subtítulos palabra por palabra |
-| `produce` | comandos texto/hoja/preview/check/sinvoz/final, render en paralelo, caché de revisión |
-| `check` | revisión automática de cuadros y contraste por pieza |
-| `audio`, `align` | mezcla voz + efectos + música; sincroniza la voz por silencios |
-| `humanos` | personaje base `guy`, `anchors` (cabeza, boca, manos…), `medal` |
-| `muebles`, `exterior`, `pantallas` | piezas neutras: muebles, reloj, ventana, casa, árbol, nubes, rayo, documentos, chat de celular, monitor, `bar_chart`, `people_grid`… |
-| `caricatura` | estilo caricatura (aparte, ver "Estilos"): `Pincel`, formas (`jagged`, `spiky_blob`, `blob`, `teardrop`, `strokes`), `humanos.monito`, `exterior.fogata` |
-| `registry` | las piezas del motor listas para mezclar en los `MAP` del canal |
-| `lazy`, `catalogo` | catálogos con carga perezosa y generador de `CATALOGO.md` |
+| `config` | `Channel` (channel configuration) and `configure()` |
+| `base` | font `F`, colors, `lerp`/`ease`/`pop`, `chip` (label), `bigtext`, `rich_caption`, `xmark`, `check` |
+| `core` | safe zones, `canvas`, `grad`, bubbles `bubble`/`say`, `fit_font`, `calendar`, `gauge`, `confetti`, `speedlines`, `sparkles`, `follow_btn`, `stamp` |
+| `motion` | easing curves (`back_out`, `elastic_out`…), `tw`, `yoyo`, `shake`, `layer`, `glow`, `radial_bg`, `space_bg`, `vignette`, `sphere_shade`, word-by-word captions |
+| `produce` | commands text/sheet/preview/check/silent/final, parallel rendering, check cache |
+| `check` | automatic frame check and per-piece contrast |
+| `audio`, `align` | mixes voice + effects + music; syncs the voice by its pauses |
+| `humans` | base character `guy`, `anchors` (head, mouth, hands…), `medal` |
+| `furniture`, `exterior`, `screens` | neutral pieces: furniture, clock, window, house, tree, clouds, lightning, documents, phone chat, monitor, `bar_chart`, `people_grid`… |
+| `cartoon` | cartoon style (separate, see "Styles"): `Brush`, shapes (`jagged`, `spiky_blob`, `blob`, `teardrop`, `strokes`), `humans.buddy`, `exterior.campfire` |
+| `registry` | the engine's pieces, ready to merge into the channel's `MAP`s |
+| `lazy`, `catalog` | lazy-loading catalogs and the catalog generator |
 
-Formato del spec, zonas seguras y consejos de animación: ver el `CLAUDE.md` del canal Datos que Asustan, que sigue
-siendo la referencia más completa.
+Spec format, safe zones and animation tips: see the `CLAUDE.md` of the Datos que Asustan channel, which is still the
+most complete reference.
 
-## Estilos
+Default on-screen texts (`Channel.follow_text`, and piece defaults such as `calendar(label=…)` or `wanted(title=…)`)
+are in Spanish because the current channels are; pass your own text to change them.
 
-El motor trae dos estilos que se pueden mezclar en un mismo video; ninguno cambia al otro:
+## Styles
 
-- **Básico** (`humanos`, `muebles`, `exterior`, `pantallas`): figuras planas con contorno negro. Las piezas reciben el
-  `ImageDraw` (`d`). Es el que usa Datos que Asustan.
-- **Caricatura** (`reels_engine.caricatura`): orillas suaves (se dibuja al doble y se reduce), tinta café muy oscuro
-  (`Channel.ink`), bordes irregulares y texturas de rayitas. Las piezas reciben la imagen (`img`) porque se pintan en una
-  capa aparte, y avisan su silueta a la revisión automática.
+The engine has two styles that can be mixed in the same video; neither changes the other:
+
+- **Basic** (`humans`, `furniture`, `exterior`, `screens`): flat shapes with a black outline. Pieces take the
+  `ImageDraw` (`d`). It's the one Datos que Asustan uses.
+- **Cartoon** (`reels_engine.cartoon`): soft edges (drawn at double size and scaled down), very dark brown ink
+  (`Channel.ink`), rough edges and stroke textures. Pieces take the image (`img`) because they're painted on a separate
+  layer, and they report their outline to the automatic check.
 
 ```python
-from canal.personajes import monito
-from canal.props import fogata
-fogata(img, 540, FLOOR - 40, .8, t=c.t)
-a = monito(img, 300, FLOOR, .8, brazos="saluda", mood="risa", pelo="fleco", ropa=(80, 150, 220), t=c.t)
-say(ImageDraw.Draw(img), "¡Hola!", a["mouth"], a["head_r"])
+from channel.characters import buddy
+from channel.props import campfire
+campfire(img, 540, FLOOR - 40, .8, t=c.t)
+a = buddy(img, 300, FLOOR, .8, arms="wave", mood="laugh", hair="bangs", shirt=(80, 150, 220), t=c.t)
+say(ImageDraw.Draw(img), "Hi!", a["mouth"], a["head_r"])
 ```
 
-`monito` es la base para armar personajes: `pose` (parado, sentado), `brazos` (abajo, arriba, jarra, saluda, señala,
-pensando, atras, o `(izq, der)`), `mood` (feliz, neutral, triste, sorpresa, enojado, risa, dormido), `pelo` (ninguno,
-fleco, corto), colores de piel/ropa/pelo, y dos ganchos para vestirlo sin redibujar el cuerpo: `vestir(p, a)` (sobre el
-torso, bajo los brazos) y `accesorios(p, a)` (al final). `p` es el `Pincel` y `a` los puntos del cuerpo (cabeza, boca,
-manos, pecho, cadera…). Ejemplo completo: `plantilla_canal/specs/s02_caricatura.py`.
+`buddy` is the base to build characters on: `pose` (standing, sitting), `arms` (down, up, hips, wave, point, think,
+behind, or `(left, right)`), `mood` (happy, neutral, sad, surprised, angry, laugh, asleep), `hair` (none, bangs, short),
+skin/shirt/hair colors, and two hooks to dress it without redrawing the body: `dress(p, a)` (over the torso, under the
+arms) and `extras(p, a)` (at the end). `p` is the `Brush` and `a` the body points (head, mouth, hands, chest, hip…).
+Full example: `channel_template/specs/s02_cartoon.py`.
 
-Piezas propias en este estilo: `with Pincel(img, (x0, y0, x1, y1)) as p: p.polygon(...); p.polyline(...)`.
-Ojo con los fondos muy oscuros: la tinta es casi negra (la revisión de contraste lo avisa).
+Your own pieces in this style: `with Brush(img, (x0, y0, x1, y1)) as p: p.polygon(...); p.polyline(...)`.
+Careful with very dark backgrounds: the ink is almost black (the contrast check warns about it).
 
-## Dibujo (pincel)
+## Drawing backend
 
-Hoy todo se dibuja con Pillow (`brush="pil"`). La configuración ya tiene el campo `brush` para agregar más adelante un
-pincel vectorial (cairo) sin romper los canales que usan Pillow: las piezas actuales seguirán funcionando igual.
+Everything is drawn with Pillow today (`brush="pil"`). The configuration already has the `brush` field to add a vector
+backend (cairo) later without breaking channels that use Pillow: the current pieces will keep working the same.
 
-## Publicar una versión nueva del motor
+## Old Spanish names
 
-1. Cambia el código y prueba con la plantilla (`cd plantilla_canal && python3 -m canal.produce specs/s01_ahorro.py check`)
-   y con al menos un canal real (preview + check de todos sus specs, comparando contra los cuadros de antes).
-2. Sube `version` en `pyproject.toml` y `reels_engine/__init__.py`, y anota el cambio abajo.
-3. Commit, etiqueta y push: `git tag v0.2.0 && git push origin main v0.2.0`.
-4. En cada canal, cambia la etiqueta en `requirements.txt` y reinstala (`pip install -r requirements.txt`).
+Up to v0.2.0 the engine used Spanish names. They still work, so channels pinned to older versions can upgrade without
+changing their code:
 
-Las versiones nunca se reescriben: si algo sale mal, se publica otra.
+| Old name | New name |
+|---|---|
+| `reels_engine.muebles`, `pantallas`, `humanos`, `catalogo` | `reels_engine.furniture`, `screens`, `humans`, `catalog` |
+| `registry.PERSONAJES`, `registry.FONDOS` | `registry.CHARACTERS`, `registry.BACKGROUNDS` |
+| commands `texto`, `hoja`, `check-contraste`, `sinvoz` | `text`, `sheet`, `check-contrast`, `silent` (the old names keep their old file names: `_hoja.png`, `_SINVOZ.mp4`) |
+| `chair(kind="silla" / "oficina")` | `chair(kind="chair" / "office")` |
 
-## Versiones
+The v0.2.0 cartoon style (`caricatura`, `monito`, `fogata`, `Pincel`) was renamed without aliases (`cartoon`, `buddy`,
+`campfire`, `Brush`): no channel used it yet.
 
-- **v0.2.0** — Estilo caricatura (`reels_engine.caricatura`): `Pincel`, formas, `monito` (personaje base con poses,
-  caras, pelo y ganchos para vestirlo) y `fogata`. `Channel.ink`. La revisión automática ya ve las piezas pintadas en
-  capa aparte (`check.registrar`). Nada del estilo básico cambia: los cuadros de v0.1.0 salen idénticos.
-- **v0.1.0** — Primera versión, separada de `licho/datos-asustan-videos` (`lib/`) sin cambiar ningún cuadro de sus videos.
+## Publishing a new engine version
+
+1. Change the code and test it with the template (`cd channel_template && python3 -m channel.produce specs/s01_savings.py check`)
+   and with at least one real channel (preview + check of all its specs, comparing against the previous frames).
+2. Bump `version` in `pyproject.toml` and `reels_engine/__init__.py`, and note the change below.
+3. Commit, tag and push: `git tag v0.3.0 && git push origin main v0.3.0` (or create a GitHub release with tag `v0.3.0`;
+   the `v` matters).
+4. In each channel, change the tag in `requirements.txt` and reinstall (`pip install -r requirements.txt`).
+
+Versions are never rewritten: if something goes wrong, publish another one.
+
+## Versions
+
+- **v0.3.0** — Everything in English: code, comments, docs, check messages and commands (`text`, `sheet`, `silent`,
+  `check-contrast`). Modules renamed (`furniture`, `screens`, `humans`, `catalog`, `cartoon`) and the template is now
+  `channel_template/`. The old Spanish names still work (see "Old Spanish names"). No frame changes: the template and
+  every Datos que Asustan spec render pixel-identical to v0.1.0.
+- **v0.2.0** — Cartoon style (then `reels_engine.caricatura`): brush, shapes, base character (poses, faces, hair and
+  hooks to dress it) and campfire. `Channel.ink`. The automatic check sees pieces painted on a separate layer.
+  Nothing in the basic style changes: frames from v0.1.0 come out identical.
+- **v0.1.0** — First version, split from `licho/datos-asustan-videos` (`lib/`) without changing any frame of its videos.

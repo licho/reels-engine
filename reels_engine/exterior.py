@@ -1,9 +1,9 @@
-"""Exteriores: casas, árboles, postes, sol, luna, nubes, cerca, calle. (x, y) = centro abajo (piso) salvo indicación."""
+"""Outdoors: houses, trees, lamp posts, sun, moon, clouds, fence, road. (x, y) = bottom center (floor) unless noted."""
 import math, random
 from .core import F, BLK, WHITE, RED, YEL, dk, lc
 
 def house(d, x, y, s=1.0, wall=(240, 220, 180), roof=(190, 70, 50), lights=False, door_col=(140, 90, 50)):
-    """Casa de una planta con techo de dos aguas."""
+    """One-story house with a gabled roof."""
     S = lambda v: v * s
     d.rectangle([x - S(230), y - S(330), x + S(230), y], fill=wall, outline=BLK, width=6)
     d.polygon([(x - S(270), y - S(320)), (x, y - S(540)), (x + S(270), y - S(320))], fill=roof, outline=BLK)
@@ -16,10 +16,10 @@ def house(d, x, y, s=1.0, wall=(240, 220, 180), roof=(190, 70, 50), lights=False
         d.line([(x + S(wx), y - S(250)), (x + S(wx), y - S(150))], fill=BLK, width=4); d.line([(x + S(wx) - S(55), y - S(200)), (x + S(wx) + S(55), y - S(200))], fill=BLK, width=4)
 
 def building(d, x, y, w=220, h=600, col=(180, 150, 120), lit=0.0, seed=1, face=None):
-    """Edificio (x = centro). lit = fracción de ventanas encendidas (noche)."""
+    """Building (x = center). lit = fraction of windows lit (night)."""
     rnd = random.Random(seed)
     d.rectangle([x - w / 2, y - h, x + w / 2, y], fill=col, outline=BLK, width=5)
-    # ventanas escaladas al tamaño del edificio: nunca se salen de la fachada
+    # windows scaled to the building size: they never leave the facade
     pad = max(8, min(w, h) * .08)
     cols = max(1, int((w - pad) // 60)); rows = max(1, int((h - pad) // 80))
     cw, rh = (w - 2 * pad) / cols, (h - 2 * pad) / rows
@@ -31,7 +31,7 @@ def building(d, x, y, w=220, h=600, col=(180, 150, 120), lit=0.0, seed=1, face=N
             d.rectangle([wx - ww / 2, wy - wh / 2, wx + ww / 2, wy + wh / 2], fill=(255, 220, 110) if on else (150, 200, 230) if lit == 0 else (50, 60, 80), outline=BLK, width=2)
 
 def tree(d, x, y, s=1.0, kind="round", t=0.0, col=(70, 160, 80)):
-    """Árbol. kind: round | pine | palm."""
+    """Tree. kind: round | pine | palm."""
     S = lambda v: v * s; sw = math.sin(t * 1.5) * S(6)
     if kind == "palm":
         pts = [(x, y), (x + S(20), y - S(250)), (x + S(50) + sw, y - S(480))]
@@ -56,7 +56,7 @@ def bush(d, x, y, s=1.0, col=(80, 160, 80)):
         d.ellipse([x + S(dx) - S(r), y - S(r) * 1.6, x + S(dx) + S(r), y], fill=col, outline=BLK, width=4)
 
 def cactus(d, x, y, s=1.0, col=(70, 150, 80)):
-    """Cactus tipo saguaro (cartoon)."""
+    """Saguaro-style cactus (cartoon)."""
     S = lambda v: v * s
     for (x0, y0, x1, y1) in ((-35, -420, 35, 0), (-130, -300, -80, -170), (80, -360, 130, -230)):
         d.rounded_rectangle([x + S(x0), y + S(y0), x + S(x1), y + S(y1)], int(S(25)), fill=col, outline=BLK, width=4)
@@ -64,7 +64,7 @@ def cactus(d, x, y, s=1.0, col=(70, 150, 80)):
     d.line([(x - S(105), y - S(150)), (x - S(35), y - S(150))], fill=BLK, width=4); d.line([(x + S(35), y - S(210)), (x + S(105), y - S(210))], fill=BLK, width=4)
 
 def street_lamp(d, x, y, s=1.0, on=True):
-    """Poste de luz; y = piso."""
+    """Street lamp; y = floor."""
     S = lambda v: v * s
     if on: d.polygon([(x + S(80), y - S(640)), (x + S(140), y - S(640)), (x + S(300), y), (x - S(80), y)], fill=(255, 245, 190))
     d.rectangle([x - S(12), y - S(680), x + S(12), y], fill=(70, 70, 80), outline=BLK, width=3)
@@ -79,7 +79,7 @@ def sun(d, x, y, r=90, t=0.0, rays=True):
     d.ellipse([x - r, y - r, x + r, y + r], fill=(255, 220, 70), outline=(240, 170, 40), width=max(3, r // 15))
 
 def moon(d, x, y, r=80, bg=(20, 25, 55), crescent=False):
-    if crescent:                                   # creciente real (sin "tapar" con el color del fondo)
+    if crescent:                                   # real crescent (without "covering" with the background color)
         from PIL import Image as _I, ImageDraw as _D
         n = int(2 * r) + 2; m = _I.new("1", (n, n), 0); md = _D.Draw(m)
         md.ellipse([0, 0, 2 * r, 2 * r], fill=1); md.ellipse([r * .55, -r * .05, r * 2.5, r * 1.9], fill=0)
@@ -88,10 +88,10 @@ def moon(d, x, y, r=80, bg=(20, 25, 55), crescent=False):
     for (dx, dy, rr) in ((-.3, -.2, .18), (.25, .2, .12), (.1, -.4, .1)): d.ellipse([x + dx * r - rr * r, y + dy * r - rr * r, x + dx * r + rr * r, y + dy * r + rr * r], fill=(225, 220, 180))
     if r >= 30:
         from .motion import sphere_shade
-        sphere_shade(d._image, x, y, r, .25, .3)                      # volumen de esfera
+        sphere_shade(d._image, x, y, r, .25, .3)                      # sphere volume
 
 def clouds(d, x, y, s=1.0, col=WHITE, t=0.0, rain=False):
-    """Nube (x, y = centro). rain=True dibuja lluvia."""
+    """Cloud (x, y = center). rain=True draws rain."""
     S = lambda v: v * s
     for dx, dy, r in ((-90, 10, 60), (0, -20, 85), (90, 10, 60)):
         d.ellipse([x + S(dx) - S(r), y + S(dy) - S(r), x + S(dx) + S(r), y + S(dy) + S(r)], fill=col)
@@ -107,14 +107,14 @@ def fence(d, x0, x1, y, h=160, col=(240, 240, 235)):
     d.rectangle([x0, y - h * .75, x1, y - h * .62], fill=col, outline=BLK, width=3)
 
 def road(d, y0, y1, t=0.0, speed=0.0, col=(70, 70, 75)):
-    """Calle horizontal con líneas (speed>0 se mueven)."""
+    """Horizontal road with lane lines (speed>0 makes them move)."""
     d.rectangle([0, y0, 1080, y1], fill=col)
     off = (t * speed) % 200
     for x in range(-200, 1280, 200):
         d.rectangle([x - off, (y0 + y1) / 2 - 8, x - off + 110, (y0 + y1) / 2 + 8], fill=(240, 240, 240))
 
 def booth(d, x, y, s=1.0, label="SEGURIDAD", col=(200, 205, 210)):
-    """Caseta (vigilancia, cobro)."""
+    """Booth (security, toll)."""
     S = lambda v: v * s
     d.rectangle([x - S(130), y - S(470), x + S(130), y], fill=col, outline=BLK, width=6)
     d.rectangle([x - S(150), y - S(500), x + S(150), y - S(460)], fill=dk(col, .8), outline=BLK, width=5)
@@ -122,7 +122,7 @@ def booth(d, x, y, s=1.0, label="SEGURIDAD", col=(200, 205, 210)):
     d.text((x, y - S(200)), label, font=F(S(36)), fill=BLK, anchor="mm")
 
 def bolt(d, x0, y0, x1, y1, seed=1, width=14, col=(255, 245, 140), glow=True, branches=2):
-    """Rayo en zigzag de (x0,y0) a (x1,y1) con ramas y resplandor."""
+    """Zigzag lightning bolt from (x0,y0) to (x1,y1) with branches and glow."""
     rnd = random.Random(seed); n = 9; pts = [(x0, y0)]
     for k in range(1, n):
         u = k / n; pts.append((x0 + (x1 - x0) * u + rnd.uniform(-1, 1) * 60, y0 + (y1 - y0) * u))
@@ -134,7 +134,7 @@ def bolt(d, x0, y0, x1, y1, seed=1, width=14, col=(255, 245, 140), glow=True, br
         d.line([(bx, by), ((bx + ex) / 2 + rnd.uniform(-30, 30), (by + ey) / 2), (ex, ey)], fill=col, width=max(3, width // 2))
 
 def ground_current(d, x, y, t, r=300, col=(255, 230, 80)):
-    """Corriente que se expande por el suelo desde (x, y)."""
+    """Electric current spreading over the ground from (x, y)."""
     for k in range(3):
         rr = (t * 300 + k * r / 3) % r
         d.arc([x - rr, y - rr * .18, x + rr, y + rr * .18], 0, 360, fill=col, width=5)

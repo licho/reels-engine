@@ -1,14 +1,15 @@
-"""Producción de un video a partir de un archivo de especificación (spec).
+"""Produces a video from a specification file (spec).
 
-Uso:
-  python3 -m lib.produce SPEC.py texto              -> texto para ElevenLabs
-  python3 -m lib.produce SPEC.py preview 1.5 8 20   -> hoja de cuadros (tiempos nominales)
-  python3 -m lib.produce SPEC.py hoja               -> hoja de revisión (1 cuadro cada 2 s) ANTES de generar el video (~3 s)
-  python3 -m lib.produce SPEC.py check              -> revisión rápida (subtítulos, bordes, textos)
-  python3 -m lib.produce SPEC.py check-contraste    -> revisión + contraste (lenta, solo si se pide)
-  python3 -m lib.produce SPEC.py sinvoz             -> video sin voz (música + efectos)
-  python3 -m lib.produce SPEC.py final VOZ.mp3      -> video final sincronizado con la voz
-Cada render genera también una hoja de verificación (1 cuadro cada 2 s)."""
+Usage:
+  python3 -m channel.produce SPEC.py text             -> text for the voice (ElevenLabs)
+  python3 -m channel.produce SPEC.py preview 1.5 8 20 -> sheet with those frames (nominal times)
+  python3 -m channel.produce SPEC.py sheet            -> review sheet (1 frame every 2 s) BEFORE rendering the video (~3 s)
+  python3 -m channel.produce SPEC.py check            -> quick check (captions, edges, texts)
+  python3 -m channel.produce SPEC.py check-contrast   -> check + contrast (slow, only on request)
+  python3 -m channel.produce SPEC.py silent           -> video without voice (music + effects)
+  python3 -m channel.produce SPEC.py final VOICE.mp3  -> final video synced to the voice
+Every render also writes a verification sheet (1 frame every 2 s).
+The old Spanish command names (texto, hoja, check-contraste, sinvoz) still work and keep their old file names."""
 import importlib.util, os, sys, subprocess, math
 import numpy as np
 from PIL import Image, ImageDraw
@@ -62,8 +63,8 @@ def scene_at(m, v):
 def render_frame(m, v, t, rec=None):
     fn, s0, s1 = scene_at(m, v)
     c = Ctx(); c.v = v; c.t = t; c.lt = v - s0; c.dur = s1 - s0; c.shake = 0
-    c.at = lambda i: m.NSTART[i] - s0          # inicio de la línea i relativo a la escena
-    c.line, c.cap, c.cap_lt = 0, "", 0.0         # línea actual (para escenas que dibujan su propio subtítulo, ej. pixel)
+    c.at = lambda i: m.NSTART[i] - s0          # start of line i relative to the scene
+    c.line, c.cap, c.cap_lt = 0, "", 0.0         # current line (for scenes that draw their own caption, e.g. pixel art)
     for i, (tag, spoken, cap) in enumerate(m.LINES):
         e = m.NSTART[i + 1] if i + 1 < len(m.LINES) else m.NEND
         if m.NSTART[i] <= v < e: c.line, c.cap, c.cap_lt = i, cap, v - m.NSTART[i]
@@ -72,11 +73,11 @@ def render_frame(m, v, t, rec=None):
     img = fn(c)
     d = ImageDraw.Draw(img)
     if rec: rec.tag = "caption"
-    if getattr(m, "VIGNETTE", _cfg.vignette) and getattr(m, "CAPTIONS", _cfg.captions):        # viñeta estándar (no en pixel)
+    if getattr(m, "VIGNETTE", _cfg.vignette) and getattr(m, "CAPTIONS", _cfg.captions):        # standard vignette (not in pixel art)
         from .motion import vignette
         d = vignette(img, getattr(m, "VIGNETTE", _cfg.vignette))
     if getattr(m, "CAPTIONS", _cfg.captions) and c.cap:
-        if getattr(m, "CAPTION_STYLE", _cfg.caption_style) == "words":                  # estándar: palabra por palabra
+        if getattr(m, "CAPTION_STYLE", _cfg.caption_style) == "words":                  # standard: word by word
             from .motion import caption_words
             caption_words(d, c.cap, c.cap_lt)
         else:
@@ -99,7 +100,7 @@ def build_audio(m, out_wav, T_of_v, v_of_T, dur, voice=None):
 _JOB = {}
 
 def _render_part(args):
-    """Proceso hijo: dibuja un tramo de cuadros y lo codifica en su propio archivo."""
+    """Child process: draws a range of frames and encodes it into its own file."""
     i0, i1, path, preset = args
     m, v_of_T = _JOB["m"], _JOB["v_of_T"]
     p = subprocess.Popen(["ffmpeg", "-y", "-loglevel", "error", "-f", "rawvideo", "-pix_fmt", "rgb24", "-s", f"{W}x{H}", "-r", str(FPS), "-i", "-",
@@ -111,7 +112,7 @@ def _render_part(args):
     return path
 
 def encode(m, out_mp4, v_of_T, dur, wav, preset="medium"):
-    """Dibuja y codifica usando todos los núcleos (un tramo por núcleo) y luego une los tramos."""
+    """Draws and encodes using every core (one range per core), then joins the ranges."""
     import multiprocessing as mp
     n = int(dur * FPS); k = max(1, min(os.cpu_count() or 1, _cfg.workers))
     _JOB.update(m=m, v_of_T=v_of_T)
@@ -131,7 +132,7 @@ def encode(m, out_mp4, v_of_T, dur, wav, preset="medium"):
     return sheet
 
 def sheet_quick(m, path, step=2.0):
-    """Hoja de revisión ANTES de generar el video: un cuadro cada 'step' segundos (tiempo nominal), en segundos."""
+    """Review sheet BEFORE rendering the video: one frame every 'step' seconds (nominal time)."""
     ts = [x * step + step / 2 for x in range(int(m.NEND / step))]
     cols = math.ceil(len(ts) / 3)
     sh = Image.new("RGB", (180 * cols, 320 * 3))
@@ -147,7 +148,7 @@ def _fingerprint(spec_path):
     return h.hexdigest()
 
 def run_check(m, per_scene=6, contrast=False):
-    """Revisa varios cuadros de cada escena (contraste solo si se pide). Devuelve True si no hay problemas."""
+    """Checks several frames of each scene (contrast only on request). Returns True when there are no problems."""
     total = 0
     bounds = [m.NSTART[li] for li, _ in m.SCENES] + [m.NEND]
     for k, (li, fn) in enumerate(m.SCENES):
@@ -159,48 +160,51 @@ def run_check(m, per_scene=6, contrast=False):
                 with check.recording(rec): render_frame(m, v, v, rec)
             finally: check.ACTIVE = None
             for p, bb in check.contrast_issues(rec):
-                key = p.split(" se confunde")[0] if "' se confunde" in p else p      # una línea por pieza y escena
+                key = p.split(" blends into")[0] if "' blends into" in p else p      # one line per piece and scene
                 if key not in seen: seen[key] = v; worst[key] = 0; full[key] = p
-                pct = int(p.split("(")[1].split("%")[0]) if "% de su orilla" in p else 0
+                pct = int(p.split("(")[1].split("%")[0]) if "% of its outline" in p else 0
                 if pct > worst[key]: worst[key] = pct; full[key] = p
             for p, px in check.analyze(rec.items):
                 seen.setdefault(p, v); worst[p] = max(worst.get(p, 0), px)
         for p, v in seen.items():
-            if p in full: print(f"  [{fn.__name__} desde {v:.1f}s] {full[p]}"); total += 1; continue
-            print(f"  [{fn.__name__} desde {v:.1f}s] {p}" + (f" (hasta {worst[p]} px)" if worst[p] else "")); total += 1
-    print("Revisión automática:", "sin problemas ✔" if not total else f"{total} problema(s)")
+            if p in full: print(f"  [{fn.__name__} from {v:.1f}s] {full[p]}"); total += 1; continue
+            print(f"  [{fn.__name__} from {v:.1f}s] {p}" + (f" (up to {worst[p]} px)" if worst[p] else "")); total += 1
+    print("Automatic check:", "no problems ✔" if not total else f"{total} problem(s)")
     return total == 0
+
+_ALIASES = {"texto": "text", "hoja": "sheet", "check-contraste": "check-contrast", "sinvoz": "silent"}   # old Spanish names
 
 def main():
     spec, cmd = sys.argv[1], sys.argv[2]
+    old = cmd in _ALIASES; cmd = _ALIASES.get(cmd, cmd)
     m = load(spec)
     name = getattr(m, "NAME", os.path.splitext(os.path.basename(spec))[0])
     outdir = getattr(m, "OUTDIR", _cfg.outdir); os.makedirs(outdir, exist_ok=True)
-    if cmd == "texto":
-        print(voice_text(m)); print(f"\n# palabras: {sum(align.nwords(s) for _, s, _ in m.LINES)}  duración estimada: {m.NEND:.0f} s"); return
+    if cmd == "text":
+        print(voice_text(m)); print(f"\n# words: {sum(align.nwords(s) for _, s, _ in m.LINES)}  estimated duration: {m.NEND:.0f} s"); return
     if cmd == "preview":
         ts = [float(x) for x in sys.argv[3:]]
         ims = [Image.fromarray(render_frame(m, x, x)).resize((270, 480)) for x in ts]
         sh = Image.new("RGB", (270 * min(6, len(ims)), 480 * ((len(ims) + 5) // 6)))
         for i, im in enumerate(ims): sh.paste(im, ((i % 6) * 270, (i // 6) * 480))
         p = os.path.join(outdir, f"{name}_preview.png"); sh.save(p); print(p); return
-    if cmd == "hoja":
-        print(sheet_quick(m, os.path.join(outdir, f"{name}_hoja.png"))); return
-    stamp_f = os.path.join(outdir, f".revisado_{name}")
-    if cmd in ("check", "check-contraste"):
-        ok = run_check(m, contrast=cmd == "check-contraste")
+    if cmd == "sheet":
+        print(sheet_quick(m, os.path.join(outdir, f"{name}_{'hoja' if old else 'sheet'}.png"))); return
+    stamp_f = os.path.join(outdir, f".checked_{name}")
+    if cmd in ("check", "check-contrast"):
+        ok = run_check(m, contrast=cmd == "check-contrast")
         if ok and cmd == "check": open(stamp_f, "w").write(_fingerprint(spec))
         return
     voice = sys.argv[3] if cmd == "final" else None
     if not (os.path.exists(stamp_f) and open(stamp_f).read() == _fingerprint(spec)):
         if run_check(m): open(stamp_f, "w").write(_fingerprint(spec))
     else:
-        print("Revisión automática: ya revisado sin cambios desde entonces ✔")
+        print("Automatic check: already checked, nothing changed since ✔")
     v_of_T, T_of_v, dur = make_warp(m, voice)
     wav = os.path.join(outdir, f"{name}.wav"); build_audio(m, wav, T_of_v, v_of_T, dur, voice)
-    out = os.path.join(outdir, f"{name}{'_SINVOZ' if cmd == 'sinvoz' else ''}.mp4")
-    sheet = encode(m, out, v_of_T, dur, wav, preset="veryfast" if cmd == "sinvoz" else "medium")
-    print(out); print(sheet); print(f"duración: {dur:.1f} s")
+    out = os.path.join(outdir, f"{name}{('_SINVOZ' if old else '_SILENT') if cmd == 'silent' else ''}.mp4")
+    sheet = encode(m, out, v_of_T, dur, wav, preset="veryfast" if cmd == "silent" else "medium")
+    print(out); print(sheet); print(f"duration: {dur:.1f} s")
 
 if __name__ == "__main__":
     main()

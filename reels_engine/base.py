@@ -1,5 +1,5 @@
-"""Base del motor: lienzo, fuente, colores, interpolación y textos (letrero, texto grande, subtítulo).
-Antes vivía en src/reel.py del canal Datos que Asustan."""
+"""Engine base: canvas, font, colors, interpolation and text (label, big text, caption).
+It used to live in src/reel.py of the Datos que Asustan channel."""
 import math
 from PIL import ImageFont
 from .config import current

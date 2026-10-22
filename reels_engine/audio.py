@@ -1,4 +1,4 @@
-"""Mezclador único: voz + efectos + música. Reemplaza los audioNN.py."""
+"""Single mixer: voice + effects + music."""
 import subprocess, wave
 import numpy as np
 from .config import current as _current
@@ -16,7 +16,7 @@ class Mix:
     def __init__(self, dur, T_of_v=lambda v: v, seed=11):
         self.N = int(SR * dur); self.out = np.zeros(self.N); self.M = T_of_v; self.dur = dur
         self.rng = np.random.default_rng(seed)
-    # -- primitivas
+    # -- primitives
     def env(self, n, a=0.005, r=None):
         e = np.ones(n); na = max(1, int(a * SR)); e[:na] = np.linspace(0, 1, na)
         if r: e *= np.exp(-np.arange(n) / SR / r)
@@ -29,7 +29,7 @@ class Mix:
     def add(self, st, sig, g=1.0, raw=False):
         i = int((st if raw else self.M(st)) * SR); j = min(self.N, i + len(sig))
         if 0 <= i < self.N: self.out[i:j] += sig[:j - i] * g
-    # -- efectos (st en tiempo nominal v)
+    # -- effects (st in nominal time v)
     def pop(self, st, g=0.3, f0=300, f1=900, d=0.1): self.add(st, self.tone(np.linspace(f0, f1, int(d * SR)), d) * self.env(int(d * SR), .002, d / 2), g)
     def ding(self, st, g=0.2, f=1568): self.add(st, (self.tone(f, .4) + .5 * self.tone(f * 1.335, .4)) * self.env(int(.4 * SR), .002, .12), g)
     def whoosh(self, st, g=0.35): self.add(st - .15, lp(self.noise(.35), .08) * np.sin(np.linspace(0, np.pi, int(.35 * SR))), g)
@@ -55,16 +55,16 @@ class Mix:
         f = f0 + 30 * np.sin(2 * np.pi * 7 * tt); s = np.sign(np.sin(2 * np.pi * np.cumsum(f) / SR)) * (.6 + .4 * np.sin(2 * np.pi * 3 * tt))
         self.add(t0, lp(s, .25), g, raw=True)
     def whine(self, st, dur=1.5, g=0.07, f0=620):
-        """Zumbido de mosquito (agudo con vibrato), dur en segundos reales."""
+        """Mosquito whine (high pitch with vibrato), dur in real seconds."""
         n = int(dur * SR); tt = np.arange(n) / SR
         f = f0 + 40 * np.sin(2 * np.pi * 9 * tt) + 25 * np.sin(2 * np.pi * 1.3 * tt)
         ph = 2 * np.pi * np.cumsum(f) / SR
         sig = (np.sin(ph) + .5 * np.sin(2 * ph) + .25 * np.sin(3 * ph)) * np.minimum(1, np.minimum(tt / .15, (dur - tt) / .3))
         self.add(st, sig, g)
     def fx(self, name, st, **kw): getattr(self, name)(st, **kw)
-    # -- música
+    # -- music
     def music(self, style="bass", quiet=(), loud_from=None):
-        """style: bass | chiptune | pad | waltz. quiet=[(v0,v1)] silencios; loud_from=v sube volumen al final."""
+        """style: bass | chiptune | pad | waltz. quiet=[(v0,v1)] silences; loud_from=v raises the volume at the end."""
         v_of_T = None
         sty = {
             "bass": dict(bpm=110, bass=[73.4, 0, 73.4, 87.3, 98, 0, 87.3, 73.4], mel=None, wave='saw'),
@@ -92,7 +92,7 @@ class Mix:
                 if m and k % 32 < 28: self.add(st, self.tone(m * 2, step * .8, 'sq') * self.env(int(step * .8 * SR), .002, step * .6), .045 * g, raw=True)
             if k % 4 == 0: self.add(st, np.sin(2 * np.pi * np.cumsum(np.linspace(140, 45, int(.1 * SR))) / SR) * np.exp(-np.arange(int(.1 * SR)) / SR / .04), .25 * g, raw=True)
             if k % 4 == 2: self.add(st, lp(self.noise(.04), .6) * np.exp(-np.arange(int(.04 * SR)) / SR / .01), .10 * g, raw=True)
-    # -- salida
+    # -- output
     def render(self, out_wav, voice_path=None):
         sfx = self.out / (np.max(np.abs(self.out)) or 1)
         if voice_path:

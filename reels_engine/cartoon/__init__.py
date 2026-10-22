@@ -1,24 +1,24 @@
-"""Estilo caricatura: orillas suaves (cada pieza se dibuja al doble y se reduce), tinta café muy oscuro, bordes
-irregulares y texturas de rayitas. Es opcional y vive aparte: las piezas del estilo básico (humanos, muebles,
-exterior, pantallas) no cambian.
+"""Cartoon style: soft edges (each piece is drawn at double size and scaled down), very dark brown ink, rough
+edges and stroke textures. It's optional and lives apart: the basic-style pieces (humans, furniture, exterior,
+screens) don't change.
 
-Las piezas de este estilo reciben la imagen (img), no el ImageDraw, porque se pintan en una capa aparte:
+Pieces in this style take the image (img), not the ImageDraw, because they're painted on a separate layer:
 
-    from reels_engine.caricatura.humanos import monito
-    a = monito(img, 540, FLOOR, .9, mood="feliz", pelo="fleco")
-    say(ImageDraw.Draw(img), "¡Hola!", a["mouth"], a["head_r"])
+    from reels_engine.cartoon.humans import buddy
+    a = buddy(img, 540, FLOOR, .9, mood="happy", hair="bangs")
+    say(ImageDraw.Draw(img), "Hi!", a["mouth"], a["head_r"])
 
-Para dibujar piezas propias en este estilo: `with Pincel(img, caja) as p: p.polygon(...)`."""
+To draw your own pieces in this style: `with Brush(img, box) as p: p.polygon(...)`."""
 import math
 from PIL import Image, ImageDraw
 from ..config import current as _current
 
 _cfg = _current()
 INK = _cfg.ink
-SS = 2                                    # la capa se dibuja al doble de tamaño y se reduce (orillas suaves)
+SS = 2                                    # the layer is drawn at double size and scaled down (soft edges)
 
-def semilla(seed):
-    """Números aleatorios reproducibles (mulberry32): la misma semilla da siempre la misma forma."""
+def seeded(seed):
+    """Reproducible random numbers (mulberry32): the same seed always gives the same shape."""
     a = seed & 0xFFFFFFFF
     def imul(x, y): return (x * y) & 0xFFFFFFFF
     def rng():
@@ -29,14 +29,14 @@ def semilla(seed):
         return ((t ^ (t >> 14)) & 0xFFFFFFFF) / 4294967296
     return rng
 
-# ---------- formas ----------
+# ---------- shapes ----------
 def quad(p0, p1, p2, n=24):
-    """Curva suave de p0 a p2 que se inclina hacia p1."""
+    """Smooth curve from p0 to p2 bending toward p1."""
     return [((1 - u) ** 2 * p0[0] + 2 * (1 - u) * u * p1[0] + u * u * p2[0],
              (1 - u) ** 2 * p0[1] + 2 * (1 - u) * u * p1[1] + u * u * p2[1]) for u in (i / n for i in range(n + 1))]
 
 def jagged(points, step, amp, rng):
-    """Borde "peludo": subdivide cada arista y empuja un pico hacia fuera en cada tramo (pelaje, paja, pasto)."""
+    """"Furry" edge: splits each side and pushes a spike outward on each stretch (fur, straw, grass)."""
     n_ = len(points)
     area = sum(points[i][0] * points[(i + 1) % n_][1] - points[(i + 1) % n_][0] * points[i][1] for i in range(n_))
     sign = 1 if area > 0 else -1
@@ -53,7 +53,7 @@ def jagged(points, step, amp, rng):
     return out
 
 def spiky_blob(cx, cy, rx, ry_top, ry_bot, n, rng):
-    """Mancha con picos irregulares (melena, arbusto, explosión)."""
+    """Blob with irregular spikes (mane, bush, explosion)."""
     pts = []
     for i in range(n * 2):
         tip = i % 2 == 0
@@ -65,12 +65,12 @@ def spiky_blob(cx, cy, rx, ry_top, ry_bot, n, rng):
     return pts
 
 def blob(cx, cy, rx, ry, rng, n=18):
-    """Óvalo un poco chueco (piedras, nubes, manchas)."""
+    """Slightly wobbly oval (stones, clouds, spots)."""
     return [(cx + math.cos(2 * math.pi * i / n) * rx * (1 + .08 * (rng() - .5)),
              cy + math.sin(2 * math.pi * i / n) * ry * (1 + .08 * (rng() - .5))) for i in range(n)]
 
 def teardrop(cx, by, w, h, lean, n=40):
-    """Gota con base en (cx, by) y punta hacia arriba inclinada 'lean' px (lenguas de fuego, gotas)."""
+    """Drop with its base at (cx, by) and the tip pointing up, leaning 'lean' px (flame tongues, drops)."""
     pts = []
     for i in range(n):
         t = 2 * math.pi * i / n; u = (1 - math.cos(t)) / 2
@@ -86,7 +86,7 @@ def inside_poly(x, y, poly):
     return inside
 
 def strokes(p, poly, n, rng, cols, ln=(14, 32), sw=3.5, angle=math.pi / 2, spread=.9, curve=5):
-    """Textura de rayitas dentro de un polígono (pelaje, paja). cols = colores a sortear."""
+    """Texture of little strokes inside a polygon (fur, straw). cols = colors to pick from."""
     xs = [q[0] for q in poly]; ys = [q[1] for q in poly]
     for _ in range(n):
         x, y = min(xs) + rng() * (max(xs) - min(xs)), min(ys) + rng() * (max(ys) - min(ys))
@@ -95,10 +95,10 @@ def strokes(p, poly, n, rng, cols, ln=(14, 32), sw=3.5, angle=math.pi / 2, sprea
         if not (inside_poly(x, y, poly) and inside_poly(x + math.cos(a) * L, y + math.sin(a) * L, poly)): continue
         p.polyline(quad((x, y), (x + math.cos(a) * L * .5 + curve, y + math.sin(a) * L * .5), (x + math.cos(a) * L, y + math.sin(a) * L), 6), col, sw)
 
-# ---------- pincel ----------
-class Pincel:
-    """Capa transparente con coordenadas de pantalla. Al salir del 'with' se reduce y se pega en img.
-    Los anchos (sw) están en px de pantalla. La revisión automática recibe la silueta real de la pieza."""
+# ---------- brush ----------
+class Brush:
+    """Transparent layer with screen coordinates. On leaving the 'with' block it's scaled down and pasted on img.
+    Widths (sw) are in screen px. The automatic check gets the piece's real outline."""
     def __init__(self, img, box, ss=SS):
         self.target = img
         self.ox, self.oy = int(math.floor(box[0])), int(math.floor(box[1]))
@@ -108,7 +108,7 @@ class Pincel:
         self.d = ImageDraw.Draw(self.img)
     def __enter__(self): return self
     def __exit__(self, *exc):
-        if exc[0] is None: self.pegar()
+        if exc[0] is None: self.paste()
     def _p(self, pts):
         return [((x - self.ox) * self.ss, (y - self.oy) * self.ss) for x, y in pts]
     def polygon(self, pts, fill, stroke=INK, sw=5):
@@ -118,7 +118,7 @@ class Pincel:
     def polyline(self, pts, stroke=INK, sw=6):
         q = self._p(pts); w = max(1, sw * self.ss)
         self.d.line(q, fill=stroke, width=round(w), joint="curve")
-        for x, y in (q[0], q[-1]):                                  # puntas redondas
+        for x, y in (q[0], q[-1]):                                  # round ends
             self.d.ellipse([x - w / 2, y - w / 2, x + w / 2, y + w / 2], fill=stroke)
     def ellipse(self, cx, cy, rx, ry, fill, stroke=None, sw=0):
         (cx, cy), = self._p([(cx, cy)]); rx, ry, h = rx * self.ss, ry * self.ss, sw * self.ss / 2
@@ -127,11 +127,11 @@ class Pincel:
         self.d.ellipse([cx - rx, cy - ry, cx + rx, cy + ry], fill=fill)
     def circle(self, cx, cy, r, fill, stroke=INK, sw=5):
         self.ellipse(cx, cy, r, r, fill, stroke, sw)
-    def pegar(self):
+    def paste(self):
         small = self.img.convert("RGBa").resize((self.w, self.h), Image.LANCZOS).convert("RGBA")
         self.target.paste(small, (self.ox, self.oy), small)
         bb = small.getbbox()
         if bb:
-            from ..check import registrar
-            registrar((bb[0] + self.ox, bb[1] + self.oy, bb[2] + self.ox, bb[3] + self.oy), self.target)
+            from ..check import register
+            register((bb[0] + self.ox, bb[1] + self.oy, bb[2] + self.ox, bb[3] + self.oy), self.target)
         return ImageDraw.Draw(self.target)

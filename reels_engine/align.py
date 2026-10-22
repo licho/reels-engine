@@ -1,5 +1,5 @@
-"""Sincronización sin transcripción: detecta pausas en la voz (ffmpeg) y reparte
-el tiempo de cada línea según su número de palabras, ajustando al inicio de habla más cercano."""
+"""Sync without transcription: detects pauses in the voice (ffmpeg) and splits
+the time of each line by its word count, snapping to the nearest speech start."""
 import re, subprocess
 
 def speech_segments(path, db=-35, min_sil=0.18):
@@ -19,7 +19,7 @@ def nwords(text):
     return max(1, len(re.findall(r"\w+", text)))
 
 def line_starts(path, lines, snap=0.8):
-    """lines: textos hablados. Devuelve (inicios_reales, duración_audio)."""
+    """lines: spoken texts. Returns (real_starts, audio_duration)."""
     segs, dur = speech_segments(path)
     total = sum(b - a for a, b in segs)
     w = [nwords(l) for l in lines]; W = sum(w)

@@ -78,7 +78,7 @@ The [`channel_template/`](channel_template/) folder is a minimal channel that wo
 | `humans` | base character `guy`, `anchors` (head, mouth, hands…), `medal` |
 | `furniture`, `exterior`, `screens` | neutral pieces: furniture, clock, window, house, tree, clouds, lightning, documents, phone chat, monitor, `bar_chart`, `people_grid`… |
 | `cartoon` | cartoon style (separate, see "Styles"): `Brush`, shapes (`jagged`, `spiky_blob`, `blob`, `teardrop`, `strokes`), `humans.buddy`, `exterior.campfire` |
-| `sketch` | sketch style (separate, see "Styles"): `Pen`, `humans.doodle`, money pieces (`bill`, `money_stack`, `money_pile`, `money_jar`, `money_text`), `school_desk`, `hatched_chart`, arrows, `wall_calendar`…; `everyday`: coffee cup, car, motorbike, house, phone and other everyday objects; `history`: monuments, weapons, helmets and doodle in Roman/viking/pharaoh/Greek/knight/Aztec/Maya costume; `sports`: balls, gear, awards and doodle as athletes |
+| `sketch` | sketch style (separate, see "Styles"): `Pen`, `humans.doodle`, money pieces (`bill`, `money_stack`, `money_pile`, `money_jar`, `money_text`), `school_desk`, `hatched_chart`, arrows, `wall_calendar`…; `everyday`: coffee cup, car, motorbike, house, phone and other everyday objects; `history`: monuments, weapons, helmets and doodle in Roman/viking/pharaoh/Greek/knight/Aztec/Maya costume; `sports`: balls, gear, awards and doodle as athletes; `finance`: bank, safe, ATM, charts, gauge, debt and savings pieces |
 | `registry` | the engine's pieces, ready to merge into the channel's `MAP`s |
 | `lazy`, `catalog` | lazy-loading catalogs and the catalog generator |
 
@@ -190,6 +190,24 @@ tops = podium(img, 540, FLOOR, 720)
 doodle_runner(img, *tops[1], .6, arms=("up", "up"), number=1)
 ```
 
+Economy and personal finance (`reels_engine.sketch.finance`): `bank`, `safe` (`open=True` shows the money), `atm`,
+`cash_register`, `calculator`, `gold_bars`, `money_bag`, `money_tree`, `salary_envelope`, `price_tag`,
+`percent_badge`, `balance_scale` (`tilt`, returns the pans), `hourglass` (`t` = sand fallen), `line_chart` and
+`candle_chart` (up or down with `values` / `trend`), `pie_chart` (`parts`, `labels`), `gauge` (credit score, `value`
+0…1), `contract` (`title`, `stamp`), `ball_and_chain` (debt; `to` = where the chain ends, e.g. a foot),
+`umbrella` (emergency fund), `goal_thermometer` (`fill`, `label`), `padlock`, `magnifier`, `rocket` and `balloon`
+(inflation, bubbles). They go well with the money props and the everyday `coin`, `credit_card`, `piggy_bank` and
+`receipt`.
+
+```python
+from channel.characters import doodle
+from channel.props import pie_chart, goal_thermometer, calculator
+pie_chart(img, 300, 300, 190, (50, 30, 20), labels=("50%", "30%", "20%"))
+goal_thermometer(img, 870, FLOOR - 40, 520, fill=.7, label="$5,000")
+a = doodle(img, 560, FLOOR, .85, outfit="tie", mood="smug", arms=("hip", "point"))
+calculator(img, *a["hand_l"], 140)
+```
+
 ## Camera
 
 `reels_engine.camera` films a "world" image (a scene drawn bigger than the screen, an illustration, or the frame
@@ -294,6 +312,9 @@ Versions are never rewritten: if something goes wrong, publish another one.
 
 ## Versions
 
+- **v0.10.0** — Economy and personal finance pieces in the sketch style (`reels_engine.sketch.finance`): bank,
+  safe, ATM, cash register, calculator, gold bars, money bag and tree, charts (line, candlestick, pie), score gauge,
+  contract, debt ball and chain, goal thermometer and more. Nothing else changes: existing frames are identical.
 - **v0.9.0** — Ancient history in the sketch style (`reels_engine.sketch.history`): monuments, longship, weapons,
   shields, helmets and the doodle dressed as a Roman, viking, pharaoh, Greek or knight; Aztecs and Maya (step pyramid,
   Sun Stone, Olmec head, stela, macuahuitl, chimalli, maize, cacao, Aztec warrior and Maya noble). Sports

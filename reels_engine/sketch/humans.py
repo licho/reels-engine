@@ -48,7 +48,7 @@ def doodle_anchors(x, y, s=1.0, arms=("down", "down"), look=0.0):
     return {"head": (hx, hy), "head_r": r, "head_top": (hx, hy - r), "mouth": (hx + look * .16 * r, hy + .4 * r),
             "chest": (x, y - 360 * s), "hip": (x, y - 245 * s), "feet": (x, y), "hand_l": hands[0], "hand_r": hands[1],
             "shoulders": shoulders, "elbows": elbows,
-            "box": (x - 270 * s, y - 640 * s, x + 270 * s, y + 20 * s)}
+            "box": (x - 270 * s, y - 760 * s, x + 270 * s, y + 20 * s)}
 
 def _face(p, cx, cy, r, mood, look):
     brows, mouth, pdy = MOODS[mood]
@@ -90,11 +90,12 @@ def _head(p, cx, cy, r, mood, look):
     _face(p, cx, cy, r, mood, look)
 
 def doodle(img, x, y, s=1.0, outfit="hoodie", mood="happy", arms=("down", "down"), look=0.0, color=RED, tie=INK,
-           legs=True, shadow=True, extras=None, seed=1):
+           legs=True, shadow=True, dress=None, hat=None, extras=None, seed=1):
     """Sketch-style character. outfit: hoodie, tie (white shirt + tie) or tshirt; 'color' = hoodie/t-shirt color.
     arms = one pose or (left, right): down, hip, up, hold, show, offer, shrug, head, point, chin.
     mood: happy, smile, smug, shocked, worried, angry, sad, doubt. look: -1 (left) … 1 (right).
-    extras(p, a) runs at the end (p = Pen, a = body points). Returns the body points."""
+    Hooks (p = Pen, a = body points): dress(p, a) over the torso and under the head and arms (armor, robes, belts),
+    hat(p, a) right after the head (helmets, beards, wreaths), extras(p, a) at the very end. Returns the body points."""
     a = doodle_anchors(x, y, s, arms, look)
     P = lambda dx, dy: (x + dx * s, y + dy * s)
     with Pen(img, a["box"], seed) as p:
@@ -122,10 +123,12 @@ def doodle(img, x, y, s=1.0, outfit="hoodie", mood="happy", arms=("down", "down"
                 p.shape([P(-9, -408), P(9, -408), P(6, -394), P(-6, -394)], tie, w=3 * s, amp=.3)
             else:
                 p.stroke(spline([P(-22, -418), P(0, -400), P(22, -418)]), 5 * s, amp=.5)
+        if dress: dress(p, a)
         (hx, hy), r = a["head"], a["head_r"]
         if outfit == "hoodie":                                 # the hood, behind the head
             p.shape(ellipse(hx - look * 10 * s, y - 432 * s, 70 * s, 38 * s, n=36), color, w=7 * s)
         _head(p, hx, hy, r, mood, look)
+        if hat: hat(p, a)
         if outfit == "hoodie":
             for side in (-1, 1): p.stroke([P(14 * side, -414), P(16 * side, -372)], 4 * s, amp=.5)
         for sh, el, hd in zip(a["shoulders"], a["elbows"], (a["hand_l"], a["hand_r"])):

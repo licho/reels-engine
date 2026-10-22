@@ -11,7 +11,9 @@ Pieces in this style take the image (img), like the cartoon style, because they'
 The wobble comes from `seed`: the same seed always draws the same lines. Pass a seed that changes a few times per
 second (`seed=int(c.t * 8)`) for the "boiling lines" look of hand-drawn animation.
 
-Pieces: `humans` (doodle), `props` (money, school, charts), `everyday` (coffee, car, house, phone…).
+Pieces: `humans` (doodle), `props` (money, school, charts), `everyday` (coffee, car, house, phone…),
+`history` (pyramid, temple, weapons, helmets, doodle dressed as Roman/viking/pharaoh/Greek/knight/Aztec/Maya),
+`sports` (balls, gear, trophy, podium, goal, hoop, doodle as soccer player, boxer, runner, referee…).
 
 To draw your own pieces in this style: `with Pen(img, box, seed) as p: p.shape(...); p.stroke(...)`."""
 import math

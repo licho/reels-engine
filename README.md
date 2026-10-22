@@ -78,7 +78,7 @@ The [`channel_template/`](channel_template/) folder is a minimal channel that wo
 | `humans` | base character `guy`, `anchors` (head, mouth, hands…), `medal` |
 | `furniture`, `exterior`, `screens` | neutral pieces: furniture, clock, window, house, tree, clouds, lightning, documents, phone chat, monitor, `bar_chart`, `people_grid`… |
 | `cartoon` | cartoon style (separate, see "Styles"): `Brush`, shapes (`jagged`, `spiky_blob`, `blob`, `teardrop`, `strokes`), `humans.buddy`, `exterior.campfire` |
-| `sketch` | sketch style (separate, see "Styles"): `Pen`, `humans.doodle`, money pieces (`bill`, `money_stack`, `money_pile`, `money_jar`, `money_text`), `school_desk`, `hatched_chart`, arrows, `wall_calendar`… |
+| `sketch` | sketch style (separate, see "Styles"): `Pen`, `humans.doodle`, money pieces (`bill`, `money_stack`, `money_pile`, `money_jar`, `money_text`), `school_desk`, `hatched_chart`, arrows, `wall_calendar`…; `everyday`: coffee cup, car, motorbike, house, phone and other everyday objects |
 | `registry` | the engine's pieces, ready to merge into the channel's `MAP`s |
 | `lazy`, `catalog` | lazy-loading catalogs and the catalog generator |
 
@@ -138,6 +138,21 @@ The same `seed` always draws the same lines. A seed that changes a few times per
 the lines "boil" like hand-drawn animation; keep a fixed seed for things that should stay still. Full example:
 `channel_template/specs/s04_sketch.py`. Your own pieces: `with Pen(img, box, seed) as p: p.shape(...); p.stroke(...)`
 (also `p.limb`, `p.hatch`, `p.clip`, `p.text`).
+
+Everyday objects (`reels_engine.sketch.everyday`): `coffee_cup`, `burger`, `pizza_slice`, `car`, `motorbike`,
+`bicycle`, `sketch_house`, `sketch_building`, `sketch_tree`, `cloud`, `sun`, `phone`, `sketch_laptop`, `tv`,
+`light_bulb`, `clock`, `shopping_bag`, `shopping_cart`, `credit_card`, `coin`, `sketch_piggy_bank`, `gift_box` and
+`receipt` (registry names; the `sketch_` ones avoid clashing with basic-style pieces of the same name). Things that
+stand on the floor take the bottom center `(cx, base)`; floating things take their center `(cx, cy)`. Most take a
+size and a main color:
+
+```python
+from channel.props import coffee_cup, car, sketch_house, phone
+sketch_house(img, 760, FLOOR, 340)
+car(img, 330, FLOOR, 400, color=(214, 38, 38))
+coffee_cup(img, 900, FLOOR - 200, 150)
+phone(img, 540, 700, 240, ang=.1)
+```
 
 ## Camera
 
@@ -243,6 +258,9 @@ Versions are never rewritten: if something goes wrong, publish another one.
 
 ## Versions
 
+- **v0.7.0** — Everyday objects in the sketch style (`reels_engine.sketch.everyday`): food, vehicles, house,
+  building, tree, cloud, sun, gadgets, shopping and money things (see "Styles"). Nothing else changes: existing
+  frames are identical.
 - **v0.6.0** — Sketch style (`reels_engine.sketch`): `Pen` (wobbly tapered strokes, loose outlines, hatching),
   base character `doodle` (outfits, moods, arm poses, `doodle_marks`) and money/school pieces. New `Channel.sketch_ink`
   and `Channel.sketch_font`, new example `s04_sketch.py`. Nothing else changes: existing frames are identical.

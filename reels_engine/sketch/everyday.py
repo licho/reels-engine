@@ -1,6 +1,6 @@
 """Sketch-style everyday objects: coffee to go, car, motorbike, bicycle, house, building, tree, cloud, sun, phone,
 laptop, TV, shopping bag and cart, credit card, coin, piggy bank, light bulb, clock, gift, burger, pizza slice and
-receipt. All take the image (img) and a 'seed'.
+receipt. All take the image (img) and a 'seed'. Things on the floor draw no floor shadow unless shadow=True.
 
 Things that stand on the floor take (cx, base) = bottom center; floating things take their center (cx, cy)."""
 import math
@@ -38,11 +38,11 @@ def _wheel(p, cx, cy, r, w=5):
     p.poly(ellipse(cx, cy, r * .14, r * .14, n=12), DARK)
 
 # ---------- food and drink ----------
-def coffee_cup(img, cx, base, h=170, sleeve=WOOD, steam=True, seed=1):
+def coffee_cup(img, cx, base, h=170, sleeve=WOOD, steam=True, seed=1, shadow=False):
     """Coffee to go: paper cup with lid, cardboard sleeve and optional steam."""
     wt, wb, top = h * .31, h * .23, base - h * .82
     with Pen(img, (cx - h * .45, base - h * 1.45, cx + h * .45, base + h * .1), seed) as p:
-        p.blob(cx, base, h * .32, h * .04, SHADE)
+        if shadow: p.blob(cx, base, h * .32, h * .04, SHADE)
         at = lambda f: (wb + (wt - wb) * f)                  # half width at a height fraction (0 = base)
         p.shape([(cx - wt, top), (cx + wt, top), (cx + wb, base), (cx - wb, base)], WHITE, w=5)
         f0, f1 = .3, .68
@@ -58,11 +58,11 @@ def coffee_cup(img, cx, base, h=170, sleeve=WOOD, steam=True, seed=1):
                 p.stroke(spline([(x, top - h * .2), (x + h * .05, top - h * .3), (x - h * .04, top - h * .42),
                                  (x + h * .03, top - h * .55)]), 4, GRAY, amp=.6)
 
-def burger(img, cx, base, w=200, seed=1):
+def burger(img, cx, base, w=200, seed=1, shadow=False):
     """Burger: buns with sesame, lettuce, cheese and meat."""
     h = w * .7
     with Pen(img, (cx - w * .65, base - h * 1.1, cx + w * .65, base + w * .08), seed) as p:
-        p.blob(cx, base, w * .55, w * .06, SHADE)
+        if shadow: p.blob(cx, base, w * .55, w * .06, SHADE)
         p.shape(rrect(cx - w * .48, base - h * .2, cx + w * .48, base, h * .08), BUN, w=5)
         p.shape(rrect(cx - w * .52, base - h * .38, cx + w * .52, base - h * .18, h * .1), MEAT, w=5)
         p.shape([(cx - w * .5, base - h * .4), (cx + w * .5, base - h * .4), (cx + w * .38, base - h * .28),
@@ -91,12 +91,12 @@ def pizza_slice(img, cx, cy, h=200, ang=0.0, seed=1):
         p.shape(crust, BUN, w=5)
 
 # ---------- vehicles ----------
-def car(img, cx, base, w=420, color=BLUE, seed=1):
+def car(img, cx, base, w=420, color=BLUE, seed=1, shadow=False):
     """Small car seen from the side, facing right."""
     r = w * .11
     yb, yt = base - r * .9, base - r - w * .17
     with Pen(img, (cx - w * .6, base - w * .5, cx + w * .6, base + w * .08), seed) as p:
-        p.blob(cx, base, w * .52, w * .04, SHADE)
+        if shadow: p.blob(cx, base, w * .52, w * .04, SHADE)
         cab = [(cx - w * .32, yt + 4), (cx - w * .22, yt - w * .15), (cx + w * .12, yt - w * .15), (cx + w * .24, yt + 4)]
         p.shape(cab, color, w=6)
         p.shape([(cx - w * .27, yt), (cx - w * .2, yt - w * .12), (cx - w * .06, yt - w * .12), (cx - w * .06, yt)], GLASS, w=4, amp=.6)
@@ -110,14 +110,14 @@ def car(img, cx, base, w=420, color=BLUE, seed=1):
         p.shape(ellipse(cx - w * .48, yt + w * .05, w * .018, w * .025, n=14), RED, w=3, amp=.3)
         for wx in (cx - w * .3, cx + w * .3): _wheel(p, wx, base - r, r)
 
-def motorbike(img, cx, base, w=360, color=RED, seed=1):
+def motorbike(img, cx, base, w=360, color=RED, seed=1, shadow=False):
     """Motorbike seen from the side, facing right."""
     r = w * .15
     bx, fx, cyw = cx - w * .34, cx + w * .34, base - r
     arc = lambda x, a0, a1: [(x + math.cos(math.radians(a)) * r * 1.2, cyw + math.sin(math.radians(a)) * r * 1.2)
                              for a in range(a0, a1 + 1, 10)]
     with Pen(img, (cx - w * .6, base - w * .65, cx + w * .6, base + w * .08), seed) as p:
-        p.blob(cx, base, w * .52, w * .05, SHADE)
+        if shadow: p.blob(cx, base, w * .52, w * .05, SHADE)
         for x in (bx, fx): _wheel(p, x, cyw, r)
         p.limb([(bx, cyw), (cx - w * .05, cyw - r * .45)], 9, DARK, 3)                          # swingarm
         p.limb([(cx, cyw - r * .2), (cx - w * .2, cyw - r * .3), (bx + r * .1, cyw - r * .55)], 12, GRAY, 3.5)   # exhaust
@@ -132,12 +132,12 @@ def motorbike(img, cx, base, w=360, color=RED, seed=1):
         p.stroke([(cx + w * .15, cyw - r * 2.3), (cx + w * .23, cyw - r * 2.15), (cx + w * .3, cyw - r * 2.2)], 8, amp=.4)
         p.shape(ellipse(cx + w * .27, cyw - r * 1.75, w * .035, w * .045, n=16), YELLOW, w=3.5, amp=.3)
 
-def bicycle(img, cx, base, w=320, color=GREEN, seed=1):
+def bicycle(img, cx, base, w=320, color=GREEN, seed=1, shadow=False):
     """Bicycle seen from the side, facing right."""
     r = w * .2
     bx, fx, cyw = cx - w * .3, cx + w * .3, base - r
     with Pen(img, (cx - w * .58, base - w * .62, cx + w * .58, base + w * .08), seed) as p:
-        p.blob(cx, base, w * .5, w * .05, SHADE)
+        if shadow: p.blob(cx, base, w * .5, w * .05, SHADE)
         for x in (bx, fx):
             p.shape(ellipse(x, cyw, r, r, n=40), None, w=7, amp=.8)
             p.poly(ellipse(x, cyw, r * .12, r * .12, n=12), DARK)
@@ -151,12 +151,12 @@ def bicycle(img, cx, base, w=320, color=GREEN, seed=1):
         p.shape(ellipse(crank[0], crank[1], r * .18, r * .18, n=16), GRAY, w=4, amp=.3)
 
 # ---------- places and nature ----------
-def house(img, cx, base, w=360, wall=WALL, roof=BRICK, seed=1):
+def house(img, cx, base, w=360, wall=WALL, roof=BRICK, seed=1, shadow=False):
     """Little house with pitched roof, chimney, door and two windows."""
     h = w * .6
     top = base - h
     with Pen(img, (cx - w * .65, base - w * 1.15, cx + w * .65, base + w * .08), seed) as p:
-        p.blob(cx, base, w * .6, w * .05, SHADE)
+        if shadow: p.blob(cx, base, w * .6, w * .05, SHADE)
         p.shape(rrect(cx + w * .2, top - w * .42, cx + w * .32, top - w * .1, 4), BRICK, w=5)
         p.shape([(cx - w / 2, base), (cx - w / 2, top), (cx + w / 2, top), (cx + w / 2, base)], wall, w=6)
         roof_pts = [(cx - w * .6, top + w * .02), (cx, top - w * .45), (cx + w * .6, top + w * .02)]
@@ -170,12 +170,12 @@ def house(img, cx, base, w=360, wall=WALL, roof=BRICK, seed=1):
             p.stroke([(wx, top + h * .22), (wx, top + h * .55)], 4, amp=.3)
             p.stroke([(wx - w * .1, top + h * .385), (wx + w * .1, top + h * .385)], 4, amp=.3)
 
-def building(img, cx, base, w=240, h=520, color=(205, 210, 220), seed=1):
+def building(img, cx, base, w=240, h=520, color=(205, 210, 220), seed=1, shadow=False):
     """Office/apartment building with a grid of windows and a door."""
     top = base - h
     cols, rows = 3, max(2, int(h / (w * .3)))
     with Pen(img, (cx - w * .65, top - 20, cx + w * .65, base + w * .08), seed) as p:
-        p.blob(cx, base, w * .6, w * .05, SHADE)
+        if shadow: p.blob(cx, base, w * .6, w * .05, SHADE)
         p.shape([(cx - w / 2, base), (cx - w / 2, top), (cx + w / 2, top), (cx + w / 2, base)], color, w=6)
         p.shape(rrect(cx - w * .54, top - 14, cx + w * .54, top + 4, 4), tuple(int(v * .8) for v in color), w=5)
         ww, wh = w * .18, h / rows * .45
@@ -186,11 +186,11 @@ def building(img, cx, base, w=240, h=520, color=(205, 210, 220), seed=1):
         p.shape(rrect(cx - w * .12, base - h / rows * .8, cx + w * .12, base, 4), GLASS_D, w=5)
         p.stroke([(cx, base - h / rows * .8), (cx, base)], 4, amp=.3)
 
-def tree(img, cx, base, h=420, leaves=LEAF, seed=1):
+def tree(img, cx, base, h=420, leaves=LEAF, seed=1, shadow=False):
     """Round tree: brown trunk and a bumpy hatched top."""
     r = h * .22
     with Pen(img, (cx - h * .5, base - h * 1.05, cx + h * .5, base + h * .06), seed) as p:
-        p.blob(cx, base, h * .3, h * .035, SHADE)
+        if shadow: p.blob(cx, base, h * .3, h * .035, SHADE)
         p.shape([(cx - h * .05, base), (cx - h * .035, base - h * .5), (cx + h * .035, base - h * .5), (cx + h * .05, base)], WOOD, w=6)
         cy = base - h + r * 1.3
         top = bumpy([(cx, cy - r * .3, r), (cx - r * .8, cy + r * .2, r * .8), (cx + r * .8, cy + r * .15, r * .85),
@@ -280,12 +280,12 @@ def clock(img, cx, cy, r=90, hour=3, minute=0, seed=1):
         p.poly(ellipse(cx, cy, r * .07, r * .07, n=12), INK)
 
 # ---------- shopping and money ----------
-def shopping_bag(img, cx, base, h=200, color=PAPER_BAG, seed=1):
+def shopping_bag(img, cx, base, h=200, color=PAPER_BAG, seed=1, shadow=False):
     """Paper shopping bag with handles."""
     w = h * .8
     top = base - h * .78
     with Pen(img, (cx - w * .65, base - h * 1.05, cx + w * .65, base + h * .06), seed) as p:
-        p.blob(cx, base, w * .55, h * .04, SHADE)
+        if shadow: p.blob(cx, base, w * .55, h * .04, SHADE)
         p.stroke(spline([(cx - w * .2, top + 4), (cx - w * .18, top - h * .2), (cx + w * .18, top - h * .2), (cx + w * .2, top + 4)]), 6, amp=.6)
         p.shape([(cx - w * .45, top), (cx + w * .45, top), (cx + w * .5, base), (cx - w * .5, base)], color, w=5)
         p.stroke([(cx - w * .45, top + h * .08), (cx + w * .45, top + h * .08)], 3, tuple(int(v * .78) for v in color), amp=.4)
@@ -321,13 +321,13 @@ def coin(img, cx, cy, r=50, label="$", seed=1):
         p.stroke(ellipse(cx, cy, r * .75, r * .75, n=36), max(2, r * .05), GOLD_D, amp=.4, closed=True)
         if label: p.text(label, cx, cy, r * .9, fill=GOLD_D, warp=0)
 
-def piggy_bank(img, cx, base, w=240, color=PINK, seed=1):
+def piggy_bank(img, cx, base, w=240, color=PINK, seed=1, shadow=False):
     """Piggy bank facing right, with a coin slot."""
     h = w * .62
     cy = base - h * .55
     dark = tuple(int(v * .8) for v in color)
     with Pen(img, (cx - w * .65, base - h * 1.2, cx + w * .65, base + w * .06), seed) as p:
-        p.blob(cx, base, w * .45, w * .05, SHADE)
+        if shadow: p.blob(cx, base, w * .45, w * .05, SHADE)
         for lx in (-.28, -.12, .14, .3):
             p.shape(rrect(cx + w * lx - w * .05, cy + h * .2, cx + w * lx + w * .05, base, 5), dark, w=4)
         p.stroke(spline([(cx - w * .44, cy - h * .05), (cx - w * .5, cy - h * .14), (cx - w * .46, cy - h * .2),
@@ -339,12 +339,12 @@ def piggy_bank(img, cx, base, w=240, color=PINK, seed=1):
         p.poly(ellipse(cx + w * .26, cy - h * .12, w * .02, w * .025, n=10), INK)
         p.stroke([(cx - w * .1, cy - h * .38), (cx + w * .06, cy - h * .4)], 6, amp=.2)
 
-def gift_box(img, cx, base, w=180, color=RED, ribbon=YELLOW, seed=1):
+def gift_box(img, cx, base, w=180, color=RED, ribbon=YELLOW, seed=1, shadow=False):
     """Wrapped present with a ribbon and a bow."""
     h = w * .7
     top = base - h
     with Pen(img, (cx - w * .65, top - w * .4, cx + w * .65, base + w * .06), seed) as p:
-        p.blob(cx, base, w * .55, w * .05, SHADE)
+        if shadow: p.blob(cx, base, w * .55, w * .05, SHADE)
         p.shape(rrect(cx - w * .45, top + h * .2, cx + w * .45, base, 4), color, w=5)
         p.shape(rrect(cx - w * .5, top, cx + w * .5, top + h * .22, 4), color, w=5)
         p.shape([(cx - w * .07, top), (cx + w * .07, top), (cx + w * .07, base), (cx - w * .07, base)], ribbon, w=4)

@@ -143,8 +143,9 @@ Everyday objects (`reels_engine.sketch.everyday`): `coffee_cup`, `burger`, `pizz
 `bicycle`, `sketch_house`, `sketch_building`, `sketch_tree`, `cloud`, `sun`, `phone`, `sketch_laptop`, `tv`,
 `light_bulb`, `clock`, `shopping_bag`, `shopping_cart`, `credit_card`, `coin`, `sketch_piggy_bank`, `gift_box` and
 `receipt` (registry names; the `sketch_` ones avoid clashing with basic-style pieces of the same name). Things that
-stand on the floor take the bottom center `(cx, base)`; floating things take their center `(cx, cy)`. Most take a
-size and a main color:
+stand on the floor take the bottom center `(cx, base)`; floating things take their center `(cx, cy)`. Objects draw
+no floor shadow; pass `shadow=True` to get the soft grey one (characters keep theirs: `doodle(..., shadow=False)` hides it).
+Most take a size and a main color:
 
 ```python
 from channel.props import coffee_cup, car, sketch_house, phone
@@ -258,6 +259,9 @@ Versions are never rewritten: if something goes wrong, publish another one.
 
 ## Versions
 
+- **v0.8.0** — Sketch-style objects no longer draw a floor shadow by default; `shadow=True` brings it back
+  (`money_jar` and the everyday objects that stand on the floor). Frames with those objects change (the grey ellipse
+  under them is gone); the basic and cartoon styles and the `doodle` character are unchanged.
 - **v0.7.0** — Everyday objects in the sketch style (`reels_engine.sketch.everyday`): food, vehicles, house,
   building, tree, cloud, sun, gadgets, shopping and money things (see "Styles"). Nothing else changes: existing
   frames are identical.

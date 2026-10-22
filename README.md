@@ -78,6 +78,7 @@ The [`channel_template/`](channel_template/) folder is a minimal channel that wo
 | `humans` | base character `guy`, `anchors` (head, mouth, hands…), `medal` |
 | `furniture`, `exterior`, `screens` | neutral pieces: furniture, clock, window, house, tree, clouds, lightning, documents, phone chat, monitor, `bar_chart`, `people_grid`… |
 | `cartoon` | cartoon style (separate, see "Styles"): `Brush`, shapes (`jagged`, `spiky_blob`, `blob`, `teardrop`, `strokes`), `humans.buddy`, `exterior.campfire` |
+| `sketch` | sketch style (separate, see "Styles"): `Pen`, `humans.doodle`, money pieces (`bill`, `money_stack`, `money_pile`, `money_jar`, `money_text`), `school_desk`, `hatched_chart`, arrows, `wall_calendar`… |
 | `registry` | the engine's pieces, ready to merge into the channel's `MAP`s |
 | `lazy`, `catalog` | lazy-loading catalogs and the catalog generator |
 
@@ -89,7 +90,7 @@ are in Spanish because the current channels are; pass your own text to change th
 
 ## Styles
 
-The engine has two styles that can be mixed in the same video; neither changes the other:
+The engine has three styles that can be mixed in the same video; none changes the others:
 
 - **Basic** (`humans`, `furniture`, `exterior`, `screens`): flat shapes with a black outline. Pieces take the
   `ImageDraw` (`d`). It's the one Datos que Asustan uses.
@@ -113,6 +114,30 @@ Full example: `channel_template/specs/s02_cartoon.py`.
 
 Your own pieces in this style: `with Brush(img, (x0, y0, x1, y1)) as p: p.polygon(...); p.polyline(...)`.
 Careful with very dark backgrounds: the ink is almost black (the contrast check warns about it).
+
+- **Sketch** (`reels_engine.sketch`): hand-drawn marker look on light backgrounds. Every line wobbles a little and
+  gets thinner at the ends, outlines overshoot where they close, colors are flat and shading is loose hatching.
+  Near-black ink (`Channel.sketch_ink`); big amounts use `Channel.sketch_font` (empty = `font_bold`). Pieces take the
+  image (`img`) and a `seed`.
+
+```python
+from channel.characters import doodle, doodle_marks
+from channel.props import money_jar, money_text
+money_text(img, "$3,650", 540, 560, 160)
+money_jar(img, 540, FLOOR, 330, 520, fill=.8)
+a = doodle(img, 900, FLOOR, .85, outfit="hoodie", mood="shocked", arms=("up", "up"), look=-.5, seed=int(c.t * 6))
+doodle_marks(img, a["head"], a["head_r"], "excited")
+```
+
+`doodle` is the base character: big round head, stick legs, `outfit` (hoodie, tie, tshirt) with `color`, `arms`
+(down, hip, up, hold, show, offer, shrug, head, point, chin, or `(left, right)`), `mood` (happy, smile, smug, shocked,
+worried, angry, sad, doubt), `look` (-1 left … 1 right) and an `extras(p, a)` hook. It returns the body points (head,
+mouth, hands…) to put bubbles or objects in its hands. `doodle_marks` adds excited ticks, `?`, `!` or a sweat drop.
+
+The same `seed` always draws the same lines. A seed that changes a few times per second (`seed=int(c.t * 6)`) makes
+the lines "boil" like hand-drawn animation; keep a fixed seed for things that should stay still. Full example:
+`channel_template/specs/s04_sketch.py`. Your own pieces: `with Pen(img, box, seed) as p: p.shape(...); p.stroke(...)`
+(also `p.limb`, `p.hatch`, `p.clip`, `p.text`).
 
 ## Camera
 
@@ -218,6 +243,9 @@ Versions are never rewritten: if something goes wrong, publish another one.
 
 ## Versions
 
+- **v0.6.0** — Sketch style (`reels_engine.sketch`): `Pen` (wobbly tapered strokes, loose outlines, hatching),
+  base character `doodle` (outfits, moods, arm poses, `doodle_marks`) and money/school pieces. New `Channel.sketch_ink`
+  and `Channel.sketch_font`, new example `s04_sketch.py`. Nothing else changes: existing frames are identical.
 - **v0.5.0** — `reels_engine.publish` / `python3 -m channel.publish`: schedules a finished video on YouTube and a
   Facebook Page at a date and time (see "Scheduling videos"). New `Channel.timezone`. Nothing else changes: existing
   frames are identical.

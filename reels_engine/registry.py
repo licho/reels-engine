@@ -29,6 +29,10 @@ PROPS = {
                                                        "school_desk", "stool", "curve_arrow", "hatched_chart",
                                                        "wall_calendar", "dashed_line")},
     "block_arrow": "reels_engine.sketch.props:arrow",
+    **{k: f"reels_engine.sketch.everyday:{k}" for k in ("coffee_cup", "burger", "pizza_slice", "car", "motorbike", "bicycle",
+                                                          "cloud", "sun", "phone", "tv", "light_bulb", "clock", "shopping_bag",
+                                                          "shopping_cart", "credit_card", "coin", "gift_box", "receipt")},
+    **{f"sketch_{k}": f"reels_engine.sketch.everyday:{k}" for k in ("house", "building", "tree", "laptop", "piggy_bank")},
 }
 BACKGROUNDS = {
     "make_space": "reels_engine.motion:space_bg", "radial_bg": "reels_engine.motion",

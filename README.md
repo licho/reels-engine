@@ -12,13 +12,13 @@ configuration (colors, zones, output folder…) and adds its own pieces and vide
 System requirements: Python 3.9+, `ffmpeg` and the DejaVu Sans font (`/usr/share/fonts/truetype/dejavu/`).
 
 ```
-pip install "reels-engine[audio] @ git+https://github.com/licho/reels-engine@v0.4.0"
+pip install "reels-engine[audio] @ git+https://github.com/licho/reels-engine@v0.5.0"
 ```
 
 The channel pins the version in `requirements.txt` (always a tag, never `main`):
 
 ```
-reels-engine[audio] @ git+https://github.com/licho/reels-engine@v0.4.0
+reels-engine[audio] @ git+https://github.com/licho/reels-engine@v0.5.0
 ```
 
 `[audio]` adds `scipy` (faster audio filters). It works without it, just slower when mixing.
@@ -59,6 +59,7 @@ The [`channel_template/`](channel_template/) folder is a minimal channel that wo
    python3 -m channel.produce specs/s01.py silent         # video without voice (music + effects)
    python3 -m channel.produce specs/s01.py final voice.mp3  # final video synced to the voice
    python3 -m channel.catalog                             # regenerates the channel's piece catalog
+   python3 -m channel.publish out/s01.mp4 "2026-10-25 19:00" --title "..."   # schedules it on YouTube/Facebook
    ```
 
 ## What the engine includes
@@ -72,6 +73,7 @@ The [`channel_template/`](channel_template/) folder is a minimal channel that wo
 | `camera` | camera moves over any image: `Shot`, `film`, `path`, `pan`, `zoom_in`, `zoom_out`, `ken_burns`, `whip`, `handheld`, `impact` (see "Camera") |
 | `produce` | commands text/sheet/preview/check/silent/final, parallel rendering, check cache |
 | `check` | automatic frame check and per-piece contrast |
+| `publish` | schedules a finished video on YouTube and a Facebook Page at a date and time (see "Scheduling videos") |
 | `audio`, `align` | mixes voice + effects + music; syncs the voice by its pauses |
 | `humans` | base character `guy`, `anchors` (head, mouth, hands…), `medal` |
 | `furniture`, `exterior`, `screens` | neutral pieces: furniture, clock, window, house, tree, clouds, lightning, documents, phone chat, monitor, `bar_chart`, `people_grid`… |
@@ -134,6 +136,55 @@ say(ImageDraw.Draw(img), "Hi!", view.to_screen(mouth), head_r * view.scale)
 - `film` returns a `View`: `to_screen(p)` / `to_world(p)` and `scale`, so bubbles and labels follow the camera.
 - Example with every move: `channel_template/specs/s03_camera.py`.
 
+## Scheduling videos
+
+`python3 -m channel.publish` uploads a finished video to YouTube and/or a Facebook Page with a publish date. The
+network keeps it and publishes it on its own at that time (nothing has to stay running), like scheduling it by hand.
+
+```
+python3 -m channel.publish /tmp/my_channel_out/s01_savings.mp4 "2026-10-25 19:00" \
+    --title "How much you really save" --description "#savings #money" [--to youtube,facebook] [--tz America/Lima]
+python3 -m channel.publish status        # which networks are connected
+```
+
+- The time is in `Channel.timezone` (for example `"America/Lima"`), or the machine's zone when it's empty.
+- Without `--to` it goes to every connected network. It prints the link of each video, or why one failed.
+- YouTube: uploaded as private with a publish date; it shows as "Scheduled" in YouTube Studio. Vertical videos up to
+  3 minutes become Shorts. Default limit: about 6 uploads a day per Google project.
+- Facebook: published as a **reel** (3 to 90 seconds) between 15 minutes and 29 days ahead; up to 30 a day per Page.
+  The title and description go together as the reel's text.
+- Only the Python standard library is used (no extra packages). Hosts it needs: `oauth2.googleapis.com`,
+  `www.googleapis.com`, `graph.facebook.com`, `rupload.facebook.com`.
+
+### Connecting the accounts (once per channel)
+
+Credentials never go into the repo. `setup` saves them in `~/.config/reels-engine/<channel>/` and prints a JSON value;
+to use them on another machine or in a cloud session, store that value in the environment variable (secret)
+`REELS_<CHANNEL>_YOUTUBE` / `REELS_<CHANNEL>_FACEBOOK` (channel name in capitals, e.g. `REELS_MY_CHANNEL_YOUTUBE`), or
+`REELS_YOUTUBE` / `REELS_FACEBOOK` for all channels.
+
+**YouTube** (one Google project can serve every channel):
+1. In [Google Cloud Console](https://console.cloud.google.com/) create a project and enable **YouTube Data API v3**.
+2. *Google Auth Platform → Branding*: fill in the app name and your email. *Audience*: External, then
+   **Publish app** (in "Testing" the access expires every 7 days). Google will warn "unverified app" when you
+   connect: that's expected for personal use.
+3. *Clients → Create client → TVs and Limited Input devices*. Copy the client id and secret.
+4. `python3 -m channel.publish setup youtube CLIENT_ID CLIENT_SECRET`, open the link it shows, type the code and
+   choose the Google account of the YouTube channel.
+5. **Important:** Google keeps every video uploaded by a new, unaudited project private (it never goes public, even on
+   its date). Request the free audit once with the
+   [YouTube API Services audit form](https://support.google.com/youtube/contact/yt_api_form) ("personal use, I
+   upload my own channel's videos"). Until it's approved, use a test channel or schedule by hand.
+
+**Facebook Page:**
+1. In [Meta for Developers](https://developers.facebook.com/apps/) create an app (type *Business*), with yourself as
+   admin. It can stay in development mode: it's only used with your own Pages, so no app review is needed.
+2. In *Graph API Explorer* choose the app, *Get User Access Token* with the permissions `pages_show_list`,
+   `pages_read_engagement` and `pages_manage_posts`, and copy the token. The app id and secret are in
+   *App settings → Basic*.
+3. `python3 -m channel.publish setup facebook APP_ID APP_SECRET USER_TOKEN ["Page name"]`. It turns the token into a
+   Page token that doesn't expire (it stops working if you change your Facebook password or remove the app).
+
 ## Drawing backend
 
 Everything is drawn with Pillow today (`brush="pil"`). The configuration already has the `brush` field to add a vector
@@ -159,7 +210,7 @@ The v0.2.0 cartoon style (`caricatura`, `monito`, `fogata`, `Pincel`) was rename
 1. Change the code and test it with the template (`cd channel_template && python3 -m channel.produce specs/s01_savings.py check`)
    and with at least one real channel (preview + check of all its specs, comparing against the previous frames).
 2. Bump `version` in `pyproject.toml` and `reels_engine/__init__.py`, and note the change below.
-3. Commit, tag and push: `git tag v0.4.0 && git push origin main v0.4.0` (or create a GitHub release with tag `v0.4.0`;
+3. Commit, tag and push: `git tag v0.5.0 && git push origin main v0.5.0` (or create a GitHub release with tag `v0.5.0`;
    the `v` matters).
 4. In each channel, change the tag in `requirements.txt` and reinstall (`pip install -r requirements.txt`).
 
@@ -167,6 +218,9 @@ Versions are never rewritten: if something goes wrong, publish another one.
 
 ## Versions
 
+- **v0.5.0** — `reels_engine.publish` / `python3 -m channel.publish`: schedules a finished video on YouTube and a
+  Facebook Page at a date and time (see "Scheduling videos"). New `Channel.timezone`. Nothing else changes: existing
+  frames are identical.
 - **v0.4.0** — Camera (`reels_engine.camera`): pan, zoom in/out, Ken Burns, whip pan with motion blur, tilt,
   hand-held and impact shake, keyframed paths, and a `View` to place bubbles on the filmed scene. New example
   `s03_camera.py`. Nothing else changes: existing frames are identical.

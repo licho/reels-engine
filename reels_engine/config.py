@@ -53,6 +53,7 @@ class Channel:
     follow_text: str = "SÍGUEME"               # on-screen text of follow_btn
     # output and audio
     outdir: str = "/tmp/reels_out"
+    timezone: str = ""                    # zone for scheduled dates, e.g. "America/Lima" ("" = the machine's)
     music: tuple = ("bass", [], None)     # default music when the spec doesn't define MUSIC
     music_styles: dict = field(default_factory=dict)  # extra styles: name -> dict(bpm, bass, mel, wave)
     # automatic check

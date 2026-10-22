@@ -8,6 +8,7 @@ configure(Channel(
     name="my-channel",
     root=ROOT,
     outdir="/tmp/my_channel_out",
+    # timezone="America/Mexico_City",      # zone for scheduled dates (default: the machine's)
     caption_highlight=(80, 220, 120),        # *highlighted* words in green
     chip_bg=(30, 110, 210),                  # blue labels
     code_dirs=("channel",),

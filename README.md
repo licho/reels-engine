@@ -195,7 +195,9 @@ doodle_runner(img, *tops[1], .6, arms=("up", "up"), number=1)
 `doodle_admiral` (navy coat, officer's cap), `doodle_sailor` (`hurt=True` adds a bandage) and `doodle_guard` (robe,
 fez, `rifle`); `palace` (seaside, `flag` = how high it flies, `burn` 0…1 = scorch and flames), `warship` (facing left,
 `flash` = gun firing, `sink` 0…1, `color=WHITE` = royal yacht), `flagpole` (`flag` height, kinds plain / cross /
-tricolor), `flame`, `blast`, `smoke` and `map_pin`; background `seaside_bg` (shore on the left, sea from `SEA_Y`).
+tricolor), `flame`, `blast`, `smoke` and `map_pin`; background `seaside_bg` (shore on the left, sea from `SEA_Y`). Quack medicine: `doodle_doctor`
+(top hat, frock coat, `glasses`), `pill_bottle` (apothecary bottle, `label`), `pills` and `newspaper` (`headline`).
+Everyday also has `tomato` and `ketchup_bottle` (squeeze bottle, or `glass=True` for an old one).
 
 ```python
 from reels_engine.sketch.modern import seaside_bg, palace, warship, SEA_Y
@@ -340,6 +342,9 @@ Versions are never rewritten: if something goes wrong, publish another one.
 
 ## Versions
 
+- **v0.13.0** — More sketch pieces: the doodle as a 1800s doctor, apothecary pill bottle, pills and newspaper
+  (`reels_engine.sketch.modern`), tomato and ketchup bottle (`reels_engine.sketch.everyday`). Nothing else changes:
+  existing frames are identical.
 - **v0.12.0** — 1800s and early 1900s pieces in the sketch style (`reels_engine.sketch.modern`): sultan, admiral,
   sailor and palace guard, seaside palace (can burn), steam warship (fires, sinks), flagpole, fire, explosion, smoke,
   map pin and a seaside background. Nothing else changes: existing frames are identical.

@@ -191,6 +191,19 @@ tops = podium(img, 540, FLOOR, 720)
 doodle_runner(img, *tops[1], .6, arms=("up", "up"), number=1)
 ```
 
+1800s and early 1900s (`reels_engine.sketch.modern`): the doodle as `doodle_sultan` (robe, cloak, turban, beard),
+`doodle_admiral` (navy coat, officer's cap), `doodle_sailor` (`hurt=True` adds a bandage) and `doodle_guard` (robe,
+fez, `rifle`); `palace` (seaside, `flag` = how high it flies, `burn` 0…1 = scorch and flames), `warship` (facing left,
+`flash` = gun firing, `sink` 0…1, `color=WHITE` = royal yacht), `flagpole` (`flag` height, kinds plain / cross /
+tricolor), `flame`, `blast`, `smoke` and `map_pin`; background `seaside_bg` (shore on the left, sea from `SEA_Y`).
+
+```python
+from reels_engine.sketch.modern import seaside_bg, palace, warship, SEA_Y
+bg = seaside_bg()
+palace(bg, 270, SEA_Y + 20, 450, burn=.6, t=c.t)
+warship(bg, 800, 1200, 420, flash=1, t=c.t)
+```
+
 Economy and personal finance (`reels_engine.sketch.finance`): `bank`, `safe` (`open=True` shows the money), `atm`,
 `cash_register`, `calculator`, `gold_bars`, `money_bag`, `money_tree`, `salary_envelope`, `price_tag`,
 `percent_badge`, `balance_scale` (`tilt`, returns the pans), `hourglass` (`t` = sand fallen), `line_chart` and
@@ -327,6 +340,9 @@ Versions are never rewritten: if something goes wrong, publish another one.
 
 ## Versions
 
+- **v0.12.0** — 1800s and early 1900s pieces in the sketch style (`reels_engine.sketch.modern`): sultan, admiral,
+  sailor and palace guard, seaside palace (can burn), steam warship (fires, sinks), flagpole, fire, explosion, smoke,
+  map pin and a seaside background. Nothing else changes: existing frames are identical.
 - **v0.11.0** — Faster renders: parts of the video are reused between renders when their scene didn't change, sketch
   pieces are remembered instead of redrawn (about 2x faster drawing on sketch videos), and a new `draft` command.
   Nothing else changes: existing frames are identical.

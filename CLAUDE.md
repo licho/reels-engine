@@ -18,7 +18,8 @@ comments, docs, commits) is in English.
   marker style: they take `img` and `seed`, draw with `Pen`). Always with a one-line
   docstring and registered in `registry.py`. Styles don't mix inside a piece.
 - Every module that reads the configuration does it on import (`_cfg = current()`), so `configure()` goes first.
-- Commits in English. Versions: see "Publishing a new engine version" in `README.md`.
+- Commits in English. Versions: see "Publishing a new engine version" in `README.md`. Tags and releases are created
+  automatically on merge to `main` from the version in `pyproject.toml`; never create them by hand.
 
 ## Test
 ```

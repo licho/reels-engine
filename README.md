@@ -334,8 +334,10 @@ The v0.2.0 cartoon style (`caricatura`, `monito`, `fogata`, `Pincel`) was rename
 1. Change the code and test it with the template (`cd channel_template && python3 -m channel.produce specs/s01_savings.py check`)
    and with at least one real channel (preview + check of all its specs, comparing against the previous frames).
 2. Bump `version` in `pyproject.toml` and `reels_engine/__init__.py`, and note the change below.
-3. Commit, tag and push: `git tag v0.5.0 && git push origin main v0.5.0` (or create a GitHub release with tag `v0.5.0`;
-   the `v` matters).
+3. Merge the change into `main`. The `Release` workflow (`.github/workflows/release.yml`) then creates the tag and
+   the GitHub release `v<version>` by itself, with this version's entry from the list below as its notes. If the tag
+   already exists it does nothing, so a merge that doesn't bump the version publishes nothing. It stops with an error
+   if `pyproject.toml` and `reels_engine/__init__.py` disagree.
 4. In each channel, change the tag in `requirements.txt` and reinstall (`pip install -r requirements.txt`).
 
 Versions are never rewritten: if something goes wrong, publish another one.

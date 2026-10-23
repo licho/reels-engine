@@ -1,6 +1,7 @@
 """Sketch-style everyday objects: coffee to go, car, motorbike, bicycle, house, building, tree, cloud, sun, phone,
-laptop, TV, shopping bag and cart, credit card, coin, piggy bank, light bulb, clock, gift, burger, pizza slice and
-receipt. All take the image (img) and a 'seed'. Things on the floor draw no floor shadow unless shadow=True.
+laptop, TV, shopping bag and cart, credit card, coin, piggy bank, light bulb, clock, gift, burger, pizza slice,
+receipt, tomato and ketchup bottle. All take the image (img) and a 'seed'. Things on the floor draw no floor
+shadow unless shadow=True.
 
 Things that stand on the floor take (cx, base) = bottom center; floating things take their center (cx, cy)."""
 import math
@@ -367,6 +368,39 @@ def receipt(img, cx, cy, h=260, lines=5, total=None, seed=1):
             y = cy - h * .36 + lines * h * .1 + h * .04
             p.stroke([(cx - w * .36, y - h * .05), (cx + w * .36, y - h * .05)], 3, amp=.3)
             p.text(total, cx + w * .12, y + h * .03, h * .09, warp=0)
+
+def tomato(img, cx, cy, r=70, seed=1):
+    """Red tomato with a green star-shaped stalk, centered on (cx, cy)."""
+    with Pen(img, (cx - r * 1.3, cy - r * 1.4, cx + r * 1.3, cy + r * 1.2), seed) as p:
+        p.shape(bumpy([(cx - r * .45, cy + r * .05, r * .7), (cx + r * .45, cy + r * .05, r * .7), (cx, cy + r * .08, r * .76)]),
+                RED, w=max(3, r * .07), amp=.6)
+        p.poly(ellipse(cx - r * .45, cy - r * .2, r * .16, r * .1, rot=-.5, n=12), (255, 140, 130))
+        top = cy - r * .62
+        p.shape([(cx + math.cos(a) * r * (.42 if k % 2 == 0 else .12), top + math.sin(a) * r * (.22 if k % 2 == 0 else .07))
+                 for k, a in enumerate(math.pi * j / 5 for j in range(10))], LEAF, w=max(2.5, r * .045), amp=.3)
+        p.stroke([(cx, top), (cx + r * .05, top - r * .28)], max(3, r * .08), LEAF_D, amp=.2)
+
+def ketchup_bottle(img, cx, base, h=320, label="KETCHUP", color=RED, glass=False, seed=1, shadow=False):
+    """Ketchup bottle: today's squeeze bottle with a white cap, or glass=True for an old glass bottle with a cork."""
+    w = h * .42
+    with Pen(img, (cx - w, base - h * 1.1, cx + w, base + h * .08), seed) as p:
+        if shadow: p.blob(cx, base, w * .6, h * .03, SHADE)
+        if glass:
+            body = [(cx - w / 2, base), (cx - w / 2, base - h * .55), (cx - w * .16, base - h * .78), (cx - w * .14, base - h * .92),
+                    (cx + w * .14, base - h * .92), (cx + w * .16, base - h * .78), (cx + w / 2, base - h * .55), (cx + w / 2, base)]
+            p.poly(p.wobble(body, .4, True), GLASS)
+            with p.clip(body): p.poly([(cx - w, base - h * .6), (cx + w, base - h * .6), (cx + w, base + 5), (cx - w, base + 5)], color)
+            p.stroke(body, 6, amp=.6, closed=True)
+            p.shape(rrect(cx - w * .17, base - h, cx + w * .17, base - h * .9, 5), WOOD, w=4.5, amp=.3)
+        else:
+            body = spline([(cx - w * .46, base), (cx - w * .5, base - h * .5), (cx - w * .36, base - h * .78), (cx + w * .36, base - h * .78),
+                           (cx + w * .5, base - h * .5), (cx + w * .46, base)], closed=True)
+            p.shape(body, color, w=6, amp=.6)
+            p.shape(rrect(cx - w * .3, base - h * .92, cx + w * .3, base - h * .76, 8), WHITE, w=5, amp=.4)
+            p.shape([(cx - w * .1, base - h * .92), (cx - w * .06, base - h), (cx + w * .06, base - h), (cx + w * .1, base - h * .92)], WHITE, w=4, amp=.3)
+        p.shape(rrect(cx - w * .38, base - h * .45, cx + w * .38, base - h * .22, 6), WHITE, w=4, amp=.4)
+        if label: p.text(label, cx, base - h * .335, min(h * .07, w * .66 / max(1, len(label)) * 1.3), fill=color, warp=0)
+        if not glass: p.stroke([(cx - w * .3, base - h * .7), (cx - w * .36, base - h * .52)], 5, (255, 150, 140), amp=.2)
 
 from . import cache_pieces
 cache_pieces(globals())

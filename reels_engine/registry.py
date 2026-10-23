@@ -10,7 +10,7 @@ CHARACTERS = {
     # sketch style
     "doodle": "reels_engine.sketch.humans", "doodle_anchors": "reels_engine.sketch.humans",
     "doodle_marks": "reels_engine.sketch.humans:marks",
-    **{f"doodle_{k}": f"reels_engine.sketch.modern:{k}" for k in ("sultan", "admiral", "sailor", "guard")},
+    **{f"doodle_{k}": f"reels_engine.sketch.modern:{k}" for k in ("sultan", "admiral", "sailor", "guard", "doctor")},
     **{f"doodle_{k}": f"reels_engine.sketch.history:{k}" for k in ("roman", "viking", "pharaoh", "greek", "knight",
                                                                      "aztec", "maya")},
     **{f"doodle_{k}": f"reels_engine.sketch.sports:{k}" for k in ("soccer_player", "basketball_player", "boxer", "runner",
@@ -36,7 +36,8 @@ PROPS = {
     "block_arrow": "reels_engine.sketch.props:arrow",
     **{k: f"reels_engine.sketch.everyday:{k}" for k in ("coffee_cup", "burger", "pizza_slice", "car", "motorbike", "bicycle",
                                                           "cloud", "sun", "phone", "tv", "light_bulb", "clock", "shopping_bag",
-                                                          "shopping_cart", "credit_card", "coin", "gift_box", "receipt")},
+                                                          "shopping_cart", "credit_card", "coin", "gift_box", "receipt",
+                                                          "tomato", "ketchup_bottle")},
     **{f"sketch_{k}": f"reels_engine.sketch.everyday:{k}" for k in ("house", "building", "tree", "laptop", "piggy_bank")},
     **{k: f"reels_engine.sketch.history:{k}" for k in ("pyramid", "obelisk", "temple", "colosseum", "castle", "longship", "amphora",
                                                          "scroll", "torch", "crown", "laurel_wreath", "helmet", "sword", "axe",
@@ -56,7 +57,8 @@ PROPS = {
                                                          "umbrella", "goal_thermometer", "padlock", "magnifier", "rocket",
                                                          "balloon")},
     "sport_ball": "reels_engine.sketch.sports:ball", "sport_medal": "reels_engine.sketch.sports:medal",
-    **{k: f"reels_engine.sketch.modern:{k}" for k in ("flame", "blast", "smoke", "flagpole", "palace", "warship", "map_pin")},
+    **{k: f"reels_engine.sketch.modern:{k}" for k in ("flame", "blast", "smoke", "flagpole", "palace", "warship", "map_pin",
+                                                        "pill_bottle", "pills", "newspaper")},
 }
 BACKGROUNDS = {
     "make_space": "reels_engine.motion:space_bg", "radial_bg": "reels_engine.motion",

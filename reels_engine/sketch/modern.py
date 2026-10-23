@@ -1,5 +1,6 @@
 """Sketch-style 1800s and early 1900s: the doodle dressed as a sultan, a navy admiral, a sailor or a palace guard;
-a seaside palace, a steam warship, a flagpole, fire, explosions and smoke, a map pin, and a seaside background.
+a seaside palace, a steam warship, a flagpole, fire, explosions and smoke, a map pin, and a seaside background;
+quack medicine: the doodle as a doctor (top hat, frock coat, spectacles), an apothecary pill bottle, pills, a newspaper.
 All take the image (img) and a 'seed'; nothing draws a floor shadow.
 
     bg = seaside_bg()                                            # shore on the left, sea from SEA_Y down
@@ -10,7 +11,7 @@ All take the image (img) and a 'seed'; nothing draws a floor shadow.
 Flags: kind="plain" (one color), "cross" (white with a red cross) or "tricolor" (three horizontal stripes, 'colors')."""
 import math
 from functools import lru_cache
-from . import Pen, INK, WHITE, RED, RED_D, WOOD, WOOD_D, GLASS, ellipse, rrect, spline
+from . import Pen, INK, WHITE, RED, RED_D, WOOD, WOOD_D, GLASS, ellipse, rrect, rotated, spline
 from .everyday import bumpy
 from .humans import doodle
 from ..core import W, H, grad
@@ -270,6 +271,77 @@ def map_pin(img, cx, cy, h=120, color=RED, seed=1):
         p.shape([(cx, cy)] + [(cx + math.cos(a) * r, cy - h + r + math.sin(a) * r) for a in (math.radians(d) for d in range(150, 391, 12))],
                 color, w=5, amp=.4)
         p.shape(ellipse(cx, cy - h + r, r * .38, r * .38, n=16), WHITE, w=3, amp=.2)
+
+# ---------- quack medicine ----------
+COAT_BLACK = (48, 46, 52)
+AMBER, AMBER_D = (196, 120, 50), (140, 80, 30)
+NEWSPRINT = (238, 234, 222)
+
+def _frock_coat(p, a):
+    P, s = _scale(a)
+    for k in (-1, 1):
+        p.shape([P(46 * k, -418), P(12 * k, -418), P(14 * k, -300), P(8 * k, -150), P(60 * k, -150), P(56 * k, -330)],
+                COAT_BLACK, w=5 * s, amp=.6)
+
+def _top_hat(p, a, color=COAT_BLACK):
+    (hx, hy), r = a["head"], a["head_r"]
+    p.shape(rrect(hx - 1.1 * r, hy - .86 * r, hx + 1.1 * r, hy - .7 * r, .06 * r), color, w=.05 * r, amp=.4)
+    p.shape([(hx - .66 * r, hy - .8 * r), (hx - .62 * r, hy - 1.75 * r), (hx + .62 * r, hy - 1.75 * r), (hx + .66 * r, hy - .8 * r)],
+            color, w=.05 * r, amp=.4)
+    p.poly([(hx - .64 * r, hy - 1.02 * r), (hx + .64 * r, hy - 1.02 * r), (hx + .65 * r, hy - .9 * r), (hx - .65 * r, hy - .9 * r)], RED_D)
+
+def _spectacles(p, a):
+    (hx, hy), r = a["head"], a["head_r"]
+    fx = a["mouth"][0]                                   # the face shifts with 'look'; the mouth marks its center
+    for side in (-1, 1):
+        p.stroke(ellipse(fx + side * .27 * r, hy - .05 * r, .23 * r, .3 * r, n=28), .035 * r, GOLD, amp=.3, closed=True)
+    p.stroke([(fx - .05 * r, hy - .1 * r), (fx + .05 * r, hy - .1 * r)], .035 * r, GOLD, amp=.2)
+
+def doctor(img, x, y, s=1.0, mood="smug", arms=("hip", "offer"), look=0.0, glasses=True, seed=1):
+    """1800s doctor (or quack): white shirt and tie, long black frock coat, top hat and round gold spectacles."""
+    def extras(p, a):
+        _top_hat(p, a)
+        if glasses: _spectacles(p, a)
+    return doodle(img, x, y, s, outfit="tie", tie=INK, mood=mood, arms=arms, look=look, seed=seed, shadow=False,
+                  dress=_frock_coat, extras=extras)
+
+def pill_bottle(img, cx, base, h=240, label="PILLS", color=AMBER, ang=0.0, seed=1):
+    """Old apothecary bottle with a cork and a paper label (label = its text)."""
+    w = h * .5
+    body = [(cx - w / 2, base), (cx - w / 2, base - h * .62), (cx - w * .3, base - h * .74), (cx - w * .2, base - h * .78),
+            (cx - w * .2, base - h * .88), (cx + w * .2, base - h * .88), (cx + w * .2, base - h * .78), (cx + w * .3, base - h * .74),
+            (cx + w / 2, base - h * .62), (cx + w / 2, base)]
+    R = lambda pts: rotated(pts, cx, base - h / 2, ang) if ang else pts
+    with Pen(img, (cx - h * .7, base - h * 1.2, cx + h * .7, base + h * .2), seed) as p:
+        p.shape(R(body), color, w=6, amp=.6)
+        p.stroke(R([(cx - w * .36, base - h * .55), (cx - w * .36, base - h * .12)]), 6, (235, 190, 140), amp=.3)
+        p.shape(R(rrect(cx - w * .24, base - h, cx + w * .24, base - h * .86, 6)), WOOD, w=5, amp=.4)
+        lab = R(rrect(cx - w * .42, base - h * .5, cx + w * .42, base - h * .2, 5))
+        p.shape(lab, NEWSPRINT, w=4, amp=.4)
+        if label: p.text(label, cx, base - h * .35, min(h * .1, w * .8 / max(1, len(label)) * 1.6), warp=0)
+
+def pills(img, cx, cy, w=200, n=7, color=WHITE, seed=1):
+    """A little heap of round pills centered on (cx, cy)."""
+    with Pen(img, (cx - w * .7, cy - w * .5, cx + w * .7, cy + w * .4), seed) as p:
+        for k in range(n):
+            px = cx + (k - (n - 1) / 2) * w * .14 + (k % 2) * w * .04; py = cy - (k % 3) * w * .07
+            p.shape(ellipse(px, py, w * .09, w * .065, n=20), color, w=3.5, amp=.3)
+            p.stroke([(px - w * .05, py), (px + w * .05, py)], 2.5, (170, 170, 175), amp=.1)
+
+def newspaper(img, cx, cy, w=360, headline="NEWS", ang=0.0, seed=1):
+    """Old newspaper page: masthead line, a headline (headline = its text) and columns of text lines."""
+    h = w * 1.25; x0, y0 = cx - w / 2, cy - h / 2
+    R = lambda pts: rotated(pts, cx, cy, ang) if ang else pts
+    with Pen(img, (cx - h * .75, cy - h * .75, cx + h * .75, cy + h * .75), seed) as p:
+        p.shape(R([(x0, y0), (x0 + w, y0), (x0 + w, y0 + h), (x0, y0 + h)]), NEWSPRINT, w=5, amp=.6)
+        p.stroke(R([(x0 + w * .08, y0 + h * .1), (x0 + w * .92, y0 + h * .1)]), 7, amp=.3)
+        p.stroke(R([(x0 + w * .08, y0 + h * .14), (x0 + w * .92, y0 + h * .14)]), 2.5, amp=.2)
+        hx, hy = R([(cx, y0 + h * .22)])[0]
+        if headline: p.text(headline, hx, hy, min(w * .13, w * .84 / max(1, len(headline)) * 1.7), warp=0)
+        for col in range(3):
+            for k in range(9):
+                lx = x0 + w * (.08 + col * .3); ly = y0 + h * (.33 + k * .07)
+                p.stroke(R([(lx, ly), (lx + w * (.24 if k % 4 != 3 else .14), ly)]), 3, (120, 116, 110), amp=.2)
 
 # ---------- background ----------
 @lru_cache(maxsize=2)

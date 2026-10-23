@@ -13,7 +13,7 @@ second (`seed=int(c.t * 8)`) for the "boiling lines" look of hand-drawn animatio
 
 Pieces: `humans` (doodle), `props` (money, school, charts), `everyday` (coffee, car, house, phone…),
 `history` (pyramid, temple, weapons, helmets, doodle dressed as Roman/viking/pharaoh/Greek/knight/Aztec/Maya),
-`modern` (1800s: sultan, admiral, sailor, palace, warship, fire, smoke),
+`modern` (1800s: sultan, admiral, sailor, doctor, palace, warship, fire, smoke, pill bottle, newspaper),
 `sports` (balls, gear, trophy, podium, goal, hoop, doodle as soccer player, boxer, runner, referee…),
 `finance` (bank, safe, ATM, charts, gauge, contract, debt ball and chain, goal thermometer…).
 

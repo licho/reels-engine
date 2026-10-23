@@ -10,6 +10,7 @@ CHARACTERS = {
     # sketch style
     "doodle": "reels_engine.sketch.humans", "doodle_anchors": "reels_engine.sketch.humans",
     "doodle_marks": "reels_engine.sketch.humans:marks",
+    **{f"doodle_{k}": f"reels_engine.sketch.modern:{k}" for k in ("sultan", "admiral", "sailor", "guard")},
     **{f"doodle_{k}": f"reels_engine.sketch.history:{k}" for k in ("roman", "viking", "pharaoh", "greek", "knight",
                                                                      "aztec", "maya")},
     **{f"doodle_{k}": f"reels_engine.sketch.sports:{k}" for k in ("soccer_player", "basketball_player", "boxer", "runner",
@@ -55,9 +56,11 @@ PROPS = {
                                                          "umbrella", "goal_thermometer", "padlock", "magnifier", "rocket",
                                                          "balloon")},
     "sport_ball": "reels_engine.sketch.sports:ball", "sport_medal": "reels_engine.sketch.sports:medal",
+    **{k: f"reels_engine.sketch.modern:{k}" for k in ("flame", "blast", "smoke", "flagpole", "palace", "warship", "map_pin")},
 }
 BACKGROUNDS = {
     "make_space": "reels_engine.motion:space_bg", "radial_bg": "reels_engine.motion",
+    "seaside_bg": "reels_engine.sketch.modern",
 }
 
 # old Spanish names, kept so existing channels keep working

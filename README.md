@@ -79,7 +79,7 @@ The [`channel_template/`](channel_template/) folder is a minimal channel that wo
 | `humans` | base character `guy`, `anchors` (head, mouth, hands…), `medal` |
 | `furniture`, `exterior`, `screens` | neutral pieces: furniture, clock, window, house, tree, clouds, lightning, documents, phone chat, monitor, `bar_chart`, `people_grid`… |
 | `cartoon` | cartoon style (separate, see "Styles"): `Brush`, shapes (`jagged`, `spiky_blob`, `blob`, `teardrop`, `strokes`), `humans.buddy`, `exterior.campfire` |
-| `sketch` | sketch style (separate, see "Styles"): `Pen`, `humans.doodle`, money pieces (`bill`, `money_stack`, `money_pile`, `money_jar`, `money_text`), `school_desk`, `hatched_chart`, arrows, `wall_calendar`…; `everyday`: coffee cup, car, motorbike, house, phone and other everyday objects; `history`: monuments, weapons, helmets and doodle in Roman/viking/pharaoh/Greek/knight/Aztec/Maya costume; `sports`: balls, gear, awards and doodle as athletes; `finance`: bank, safe, ATM, charts, gauge, debt and savings pieces |
+| `sketch` | sketch style (separate, see "Styles"): `Pen`, `humans.doodle`, money pieces (`bill`, `money_stack`, `money_pile`, `money_jar`, `money_text`), `school_desk`, `hatched_chart`, arrows, `wall_calendar`…; `everyday`: coffee cup, car, motorbike, house, phone and other everyday objects; `history`: monuments, weapons, helmets and doodle in Roman/viking/pharaoh/Greek/knight/Aztec/Maya costume; `sports`: balls, gear, awards and doodle as athletes; `finance`: bank, safe, ATM, charts, gauge, debt and savings pieces; `work`: jobs, trade tools and office things |
 | `registry` | the engine's pieces, ready to merge into the channel's `MAP`s |
 | `lazy`, `catalog` | lazy-loading catalogs and the catalog generator |
 
@@ -224,6 +224,26 @@ a = doodle(img, 560, FLOOR, .85, outfit="tie", mood="smug", arms=("hip", "point"
 calculator(img, *a["hand_l"], 140)
 ```
 
+Jobs, trades and office (`reels_engine.sketch.work`): `doodle_medic`, `doodle_nurse`, `doodle_chef`, `doodle_police`,
+`doodle_firefighter`, `doodle_builder`, `doodle_scientist`, `doodle_teacher`, `doodle_farmer`, `doodle_mechanic`
+(`name` on the patch) and `doodle_pilot` dress the doodle and put a tool in its right hand where it fits (`held` =
+hammer, wrench, screwdriver, shovel, pan, roller, book, flask, clipboard or None; same `mood`, `arms`, `look` as
+`doodle`). `work_hat(kind=…)` draws a hat alone: hard_hat, chef, police, pilot, firefighter, straw, nurse, cap or
+goggles. Tools: `hammer`, `wrench`, `screwdriver`, `shovel`, `frying_pan`, `paint_roller` (grip point + `ang`), `book`,
+`flask`, `clipboard`, `toolbox`, `ladder`, `microscope`, `scissors`. Office: `office_desk` (`monitor=True`, returns the
+top y), `office_chair`, `computer_monitor` (`text`, `chart`), `filing_cabinet` (`open` = a drawer), `printer`,
+`briefcase`, `mug`, `stapler`, `sticky_note` (`text`), `folder` (`label`), `whiteboard` (`text`, `chart`),
+`potted_plant`, `water_cooler`, `desk_lamp`, `pencil_cup` and `id_badge` (`name`). No floor shadows unless
+`shadow=True`.
+
+```python
+from channel.characters import doodle_chef, doodle_builder
+from channel.props import office_desk, whiteboard
+whiteboard(img, 540, 260, 520, text="Q4 Goals")
+office_desk(img, 330, FLOOR, 400)
+doodle_builder(img, 760, FLOOR, .8, held="shovel")
+```
+
 ## Camera
 
 `reels_engine.camera` films a "world" image (a scene drawn bigger than the screen, an illustration, or the frame
@@ -342,6 +362,9 @@ Versions are never rewritten: if something goes wrong, publish another one.
 
 ## Versions
 
+- **v0.14.0** — Jobs, trades and office in the sketch style (`reels_engine.sketch.work`): the doodle as medic, nurse,
+  chef, police officer, firefighter, builder, scientist, teacher, farmer, mechanic or pilot; work hats; trade tools;
+  office furniture and supplies. Nothing else changes: existing frames are identical.
 - **v0.13.0** — More sketch pieces: the doodle as a 1800s doctor, apothecary pill bottle, pills and newspaper
   (`reels_engine.sketch.modern`), tomato and ketchup bottle (`reels_engine.sketch.everyday`). Nothing else changes:
   existing frames are identical.

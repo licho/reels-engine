@@ -80,6 +80,7 @@ The [`channel_template/`](channel_template/) folder is a minimal channel that wo
 | `furniture`, `exterior`, `screens` | neutral pieces: furniture, clock, window, house, tree, clouds, lightning, documents, phone chat, monitor, `bar_chart`, `people_grid`… |
 | `cartoon` | cartoon style (separate, see "Styles"): `Brush`, shapes (`jagged`, `spiky_blob`, `blob`, `teardrop`, `strokes`), `humans.buddy`, `exterior.campfire` |
 | `sketch` | sketch style (separate, see "Styles"): `Pen`, `humans.doodle`, money pieces (`bill`, `money_stack`, `money_pile`, `money_jar`, `money_text`), `school_desk`, `hatched_chart`, arrows, `wall_calendar`…; `everyday`: coffee cup, car, motorbike, house, phone and other everyday objects; `history`: monuments, weapons, helmets and doodle in Roman/viking/pharaoh/Greek/knight/Aztec/Maya costume; `sports`: balls, gear, awards and doodle as athletes; `finance`: bank, safe, ATM, charts, gauge, debt and savings pieces |
+| `blueprint` | blueprint style (separate, see "Styles"): technical infographic on a dark screen: `blueprint_bg`, `kicker`, `headline`, `big_number`, `callout`, `dimension`, `scale_ruler`, `plan_frame`, `pointer`, `level_mark`, `Plate`; `section`: `cross_section` (ground cut with buildings, layers, water table and sinking) |
 | `registry` | the engine's pieces, ready to merge into the channel's `MAP`s |
 | `lazy`, `catalog` | lazy-loading catalogs and the catalog generator |
 
@@ -91,7 +92,7 @@ are in Spanish because the current channels are; pass your own text to change th
 
 ## Styles
 
-The engine has three styles that can be mixed in the same video; none changes the others:
+The engine has four styles that can be mixed in the same video; none changes the others:
 
 - **Basic** (`humans`, `furniture`, `exterior`, `screens`): flat shapes with a black outline. Pieces take the
   `ImageDraw` (`d`). It's the one Datos que Asustan uses.
@@ -224,6 +225,41 @@ a = doodle(img, 560, FLOOR, .85, outfit="tie", mood="smug", arms=("hip", "point"
 calculator(img, *a["hand_l"], 140)
 ```
 
+- **Blueprint** (`reels_engine.blueprint`): minimal technical infographic, like an engineering drawing on a dark
+  screen. Dark blue-black background with a faint grid, "+" marks and dim twinkling dots; thin white lines for
+  structures, electric cyan for what moves (water, flows, mechanisms), grey for secondary things and one accent color
+  (yellow) for the key number. All lettering is monospaced and uppercase. Pieces take the image (`img`); lines are drawn
+  on a separate layer at double size, texts straight on the image so the check sees them.
+
+```python
+from reels_engine.blueprint import blueprint_bg, kicker, headline, big_number, callout
+from reels_engine.blueprint.section import cross_section
+img, d = canvas(blueprint_bg(c.t))
+kicker(img, "GROUND MECHANICS", 60, 236)
+headline(img, "THE CITY\nTHAT SINKS", 60, 290, appear=tw(c.v, 0, 1.4, 0, 1))     # typed letter by letter
+big_number(img, tw(c.lt, .6, 2.2, 0, 15), 60, 500, unit="cm a year")            # counts up, underlined
+a = cross_section(img, (40, 790, 1040, 1320), [("fill", 30), ("wet_clay", 190, "SOFT CLAY"), ("gravel", 110), ("rock", 0)],
+                  water=40, sink=60 * k, ruler=(4, 10), t=c.t)
+callout(img, "ground level now", 525, a["surface"], 600, 752)
+```
+
+`cross_section` is the first template of the style: a cut of the ground seen from the side. Layers go from the surface
+down as `(kind, height_px[, label])` (kinds: `fill`, `clay`, `wet_clay`, `sand`, `sand_wet`, `gravel`, `rock`, `water`;
+the last one fills to the bottom). `buildings` (list of `(x, w, h)` inside the box, default a skyline made from `seed`),
+`water` (depth of the water table in px, dashed cyan with its level symbol), `sink` (px the surface has gone down: the
+buildings go with it, the original level stays as a grey dashed line and the soft layer gets thinner), `ruler=(px per
+unit, labelled every)` (0 at the original level, yellow marker at the surface), `reveal` (0→1 scans the section in from
+the top) and `t` (water dashes travel, droplets twinkle). It returns where things ended up (`ground`, `surface`,
+`water`, `layers`) to place callouts. The other templates of the style (size comparison, step by step, number chart,
+failure and consequences, question and answer) will build on the same pieces.
+
+Colors are tokens (`BG`, `GRID`, `WHITE`, `CYAN`, `GRAY`, `DIM`, `ACCENT`, `RISK`, `PANEL` and the ground colors). A
+channel changes them with `Channel.blueprint_palette` (e.g. `{"ACCENT": (255, 120, 40)}`) and the type with
+`Channel.blueprint_font` / `blueprint_font_light` (default DejaVu Sans Mono Bold / Regular; any monospaced .ttf works,
+for example JetBrains Mono). Full example: `channel_template/specs/s05_blueprint.py`. Your own pieces:
+`with Plate(img, box) as p: p.line(...); p.dashed(...); p.rect(...)` (also `p.poly`, `p.circle`, `p.hatch`, `p.clip`),
+and `text(img, ...)` for monospaced text with letter spacing.
+
 ## Camera
 
 `reels_engine.camera` films a "world" image (a scene drawn bigger than the screen, an illustration, or the frame
@@ -342,6 +378,11 @@ Versions are never rewritten: if something goes wrong, publish another one.
 
 ## Versions
 
+- **v0.14.0** — Blueprint style (`reels_engine.blueprint`): technical infographic on a dark screen (grid
+  background, monospaced titles typed letter by letter, big accent number, callouts, dimension lines, ruler, level marks)
+  and its first template, `cross_section` (ground cut with buildings, textured layers, water table and sinking). New
+  `Channel.blueprint_font`, `blueprint_font_light` and `blueprint_palette`, new example `s05_blueprint.py`. Nothing else
+  changes: existing frames are identical.
 - **v0.13.0** — More sketch pieces: the doodle as a 1800s doctor, apothecary pill bottle, pills and newspaper
   (`reels_engine.sketch.modern`), tomato and ketchup bottle (`reels_engine.sketch.everyday`). Nothing else changes:
   existing frames are identical.

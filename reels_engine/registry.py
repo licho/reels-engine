@@ -56,13 +56,17 @@ PROPS = {
                                                          "candle_chart", "pie_chart", "gauge", "contract", "ball_and_chain",
                                                          "umbrella", "goal_thermometer", "padlock", "magnifier", "rocket",
                                                          "balloon")},
+    # blueprint style
+    **{k: f"reels_engine.blueprint:{k}" for k in ("kicker", "headline", "big_number", "callout", "dimension", "scale_ruler",
+                                                    "plan_frame", "pointer", "level_mark")},
+    "cross_section": "reels_engine.blueprint.section",
     "sport_ball": "reels_engine.sketch.sports:ball", "sport_medal": "reels_engine.sketch.sports:medal",
     **{k: f"reels_engine.sketch.modern:{k}" for k in ("flame", "blast", "smoke", "flagpole", "palace", "warship", "map_pin",
                                                         "pill_bottle", "pills", "newspaper")},
 }
 BACKGROUNDS = {
     "make_space": "reels_engine.motion:space_bg", "radial_bg": "reels_engine.motion",
-    "seaside_bg": "reels_engine.sketch.modern",
+    "seaside_bg": "reels_engine.sketch.modern", "blueprint_bg": "reels_engine.blueprint",
 }
 
 # old Spanish names, kept so existing channels keep working

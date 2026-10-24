@@ -1,6 +1,6 @@
 """Example spec with the blueprint kit: question card, size comparison, steps, failure chain, charts, neon flows and
 the answer card. Try it with:
-  python3 -m channel.produce specs/s06_blueprint_kit.py preview 1 5 9 13 17
+  python3 -m channel.produce specs/s06_blueprint_kit.py preview 1 5 9 13 17 21
   python3 -m channel.produce specs/s06_blueprint_kit.py check"""
 from reels_engine.core import *
 from reels_engine.motion import tw
@@ -8,6 +8,8 @@ from reels_engine.blueprint import blueprint_bg, kicker, plan_stamp, VOLT
 from reels_engine.blueprint.marks import flow_path, fact_tag, grid_wipe
 from reels_engine.blueprint.charts import hbar_chart, limit_meter
 from reels_engine.blueprint.parts import pump, plan_tank, plan_pipe
+from reels_engine.blueprint.structures import suspension_bridge, home_section
+from reels_engine.blueprint.machines import gear_pair
 from reels_engine.blueprint.templates import question_card, size_compare, steps, failure_chain, answer_card
 
 NAME = "s06_blueprint_kit"
@@ -17,13 +19,14 @@ LINES = [
     ("calm", "Water is pumped up at night, stored, and falls by gravity during the day.", "Pump · store · *fall*"),
     ("serious", "If the pump fails, the tank empties and the pressure drops in every home.", "One pump fails… *every* tap feels it"),
     ("calm", "That is why cities keep the tank half full, never empty.", "Kept *half full*, never empty"),
+    ("curious", "Bridges and engines hide the same trick: a load that has to go somewhere.", "Every structure *moves a load*"),
 ]
 FACT = {"fact": "FACT", "estimate": "ESTIMATE", "hypothetical": "HYPOTHETICAL"}
 
 def sheet(c, kick):
     img, d = canvas(blueprint_bg(c.t))
     kicker(img, kick, 60, 236)
-    plan_stamp(img, [("sheet", f"0{c.line + 1}/05"), ("system", "water")], 1020, 160)
+    plan_stamp(img, [("sheet", f"0{c.line + 1}/06"), ("system", "water")], 1020, 160)
     return img
 
 def question(c):
@@ -64,6 +67,13 @@ def answer(c):
     fact_tag(img, "hypothetical", 60, 1330, labels=FACT)
     return img
 
-SCENES = [(0, question), (1, compare), (2, route), (3, failure), (4, answer)]
+def structures(c):
+    img = sheet(c, "STRUCTURES")
+    suspension_bridge(img, 40, 1040, 560, 720, tower_h=220, t=c.t, traffic=True, forces=True)
+    home_section(img, 60, 1220, w=440, floor_h=130, foundation=40, t=c.t)
+    gear_pair(img, 700, 1060, 110, 64, c.t, angle=1.2)
+    return img
+
+SCENES = [(0, question), (1, compare), (2, route), (3, failure), (4, answer), (5, structures)]
 SFX = [(0, .2, "pop")]
 MUSIC = ("pad", [], None)

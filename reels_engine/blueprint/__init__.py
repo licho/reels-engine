@@ -22,8 +22,9 @@ Modules: this one (background, text, titles, big number, callout, dimension line
 x-ray lens), `marks` (flows, arrows, forces, zoom lens, data stamps, alerts, waves, reveals, captions, brand),
 `charts` (readout, bars, columns, line, limit meter, fill bar, icon grid, magnitudes, split bar, before/after,
 timeline), `parts` (pipes, valve, pump, tanks, faucet, gauge, meter, house, building, tower section, terrain),
-`scale` (silhouettes at real size), `section` (cross-section of the ground) and `templates` (size comparison, steps,
-question and answer, failure chain, exploded view, schematic map).
+`scale` (silhouettes at real size), `section` (cross-section of the ground), `structures` (houses, apartment block,
+factory, power line, bridges), `machines` (gears, piston engine, electric motor, jet engine, wind turbine) and
+`templates` (size comparison, steps, question and answer, failure chain, exploded view, schematic map).
 
 To draw your own pieces in this style: `with Plate(img, box) as p: p.line(...); p.dashed(...); p.rect(...)`."""
 import math

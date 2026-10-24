@@ -1,7 +1,8 @@
-"""Blueprint style: minimal technical infographic, like an engineering drawing on a dark screen. Dark blue-black
-background with a faint grid, "+" marks and a few dim stars; thin white lines for structures, electric cyan for what
-moves (water, flows, mechanisms), grey for secondary things and one accent color (yellow by default) for the key
-number. All the lettering is monospaced and uppercase. It's optional and lives apart: the other styles don't change.
+"""Blueprint style: minimal technical infographic, like an engineering plan on a dark screen. Dark blueprint-blue
+sheet with a fine grid, a major grid with "+" marks and sheet coordinates on the margins; thin white lines for
+structures, electric cyan for what moves (water, flows, mechanisms) and for the key number, grey for secondary things,
+amber for critical points and red for failures. All the lettering is monospaced and uppercase. Its signature is the
+x-ray lens that shows what's hidden inside things. It's optional and lives apart: the other styles don't change.
 
 Pieces in this style take the image (img). Lines are drawn on a separate layer at double size and scaled down
 (soft edges); texts are drawn straight on the image so the automatic check sees them:
@@ -10,15 +11,19 @@ Pieces in this style take the image (img). Lines are drawn on a separate layer a
     from reels_engine.blueprint.section import cross_section
     img, d = canvas(blueprint_bg(c.t))
     kicker(img, "GROUND MECHANICS", 60, 250)
-    headline(img, "THE CITY\\nTHAT SINKS", 60, 290, appear=c.lt / 1.2)
+    headline(img, "THE CITY\\nTHAT *SINKS*", 60, 290, appear=c.lt / 1.2)
     big_number(img, 15, 60, 520, unit="cm a year")
     cross_section(img, (40, 800, 1040, 1320), [("clay", 230), ("gravel", 150), ("rock", 0)], water=40, t=c.t)
 
 Colors are tokens (BG, GRID, WHITE, CYAN, GRAY, DIM, ACCENT, RISK, PANEL and the ground colors); a channel changes
 any of them with `Channel.blueprint_palette` and the type with `Channel.blueprint_font` / `blueprint_font_light`.
 
-Pieces: this module (background, titles, big number, callout, dimension line, ruler, frame, markers) and `section`
-(cross-section of the ground with buildings, layers, water table and sinking).
+Modules: this one (background, text, titles, big number, callout, dimension line, ruler, frame, markers, title block,
+x-ray lens), `marks` (flows, arrows, forces, zoom lens, data stamps, alerts, waves, reveals, captions, brand),
+`charts` (readout, bars, columns, line, limit meter, fill bar, icon grid, magnitudes, split bar, before/after,
+timeline), `parts` (pipes, valve, pump, tanks, faucet, gauge, meter, house, building, tower section, terrain),
+`scale` (silhouettes at real size), `section` (cross-section of the ground) and `templates` (size comparison, steps,
+question and answer, failure chain, exploded view, schematic map).
 
 To draw your own pieces in this style: `with Plate(img, box) as p: p.line(...); p.dashed(...); p.rect(...)`."""
 import math
@@ -32,6 +37,7 @@ from ..config import current as _current
 _cfg = _current()
 W, H = _cfg.size
 SS = 2                                    # the layer is drawn at double size and scaled down (soft edges)
+NEON = 12                                 # default halo (px) of the things that move; glow=0 turns it off
 FONT = _cfg.blueprint_font or "/usr/share/fonts/truetype/dejavu/DejaVuSansMono-Bold.ttf"
 FONT_LIGHT = _cfg.blueprint_font_light or "/usr/share/fonts/truetype/dejavu/DejaVuSansMono.ttf"
 
@@ -41,6 +47,9 @@ _P = {
     "CROSS": (62, 94, 132), "STAR": (120, 146, 178),
     "WHITE": (234, 242, 252), "CYAN": (72, 228, 242), "GRAY": (130, 152, 180), "DIM": (70, 96, 128),
     "ACCENT": (255, 166, 40), "RISK": (255, 84, 72),   # critical points, "now" markers / failures and risks
+    # one color per kind of system, so a scene isn't only blue: water and the main flow are CYAN, electricity and
+    # energy VOLT, air, gas and "it works" LIME, data, signals and sensors MAGENTA, a second flow or heat VIOLET
+    "VOLT": (255, 214, 64), "LIME": (128, 242, 120), "MAGENTA": (255, 86, 200), "VIOLET": (160, 128, 255),
     "PANEL": (9, 21, 40),                              # inside of diagrams (sky of a cross-section)
     # ground layers: blue-grey tones told apart by their drawing pattern, like a real technical section
     "FILL": (46, 64, 90), "CLAY": (35, 53, 80), "SAND": (54, 72, 98), "GRAVEL": (27, 45, 70),
@@ -49,6 +58,8 @@ _P = {
 }
 BG, BG2, GRID, GRID2, CROSS, STAR = (_P[k] for k in ("BG", "BG2", "GRID", "GRID2", "CROSS", "STAR"))
 WHITE, CYAN, GRAY, DIM, ACCENT, RISK, PANEL = (_P[k] for k in ("WHITE", "CYAN", "GRAY", "DIM", "ACCENT", "RISK", "PANEL"))
+VOLT, LIME, MAGENTA, VIOLET = (_P[k] for k in ("VOLT", "LIME", "MAGENTA", "VIOLET"))
+SERIES = (CYAN, MAGENTA, VOLT, LIME, VIOLET, ACCENT)   # colors in order for charts with several series
 GROUND = {k.lower(): _P[k] for k in ("FILL", "CLAY", "SAND", "GRAVEL", "ROCK", "WATER")}
 
 @lru_cache(maxsize=64)
@@ -60,12 +71,48 @@ def mix(c1, c2, t):
     """Color between c1 and c2 (t from 0 to 1)."""
     return tuple(int(a + (b - a) * t) for a, b in zip(c1, c2))
 
+def trace(pts, k):
+    """The first fraction k (0 to 1) of a path, to draw lines that draw themselves."""
+    pts = list(pts)
+    if k >= 1 or len(pts) < 2: return pts
+    total = sum(math.dist(a, b) for a, b in zip(pts, pts[1:])); want, out = total * max(0.0, k), [pts[0]]
+    for a, b in zip(pts, pts[1:]):
+        L = math.dist(a, b)
+        if want >= L: out.append(b); want -= L
+        else:
+            if L: out.append((a[0] + (b[0] - a[0]) * want / L, a[1] + (b[1] - a[1]) * want / L))
+            break
+    return out
+
+def appear(t, i, gap=.25, dur=.4, start=0.0):
+    """How far item i of a list has appeared (0 to 1) when they come in one after another."""
+    return max(0.0, min(1.0, (t - start - i * gap) / dur)) if dur > 0 else float(t >= start + i * gap)
+
+def smooth(pts, n=12):
+    """Rounded path through the points (Catmull-Rom), for curved arrows and flows."""
+    p = [pts[0]] + list(pts) + [pts[-1]]; out = []
+    for i in range(1, len(p) - 2):
+        p0, p1, p2, p3 = p[i - 1], p[i], p[i + 1], p[i + 2]
+        for k in range(n):
+            t = k / n; t2, t3 = t * t, t * t * t
+            out.append(tuple(.5 * (2 * p1[j] + (-p0[j] + p2[j]) * t + (2 * p0[j] - 5 * p1[j] + 4 * p2[j] - p3[j]) * t2
+                                   + (-p0[j] + 3 * p1[j] - 3 * p2[j] + p3[j]) * t3) for j in (0, 1)))
+    out.append(p[-2])
+    return out
+
+def bounds(pts, pad=0):
+    """Box around some points, with a margin."""
+    xs, ys = [q[0] for q in pts], [q[1] for q in pts]
+    return (min(xs) - pad, min(ys) - pad, max(xs) + pad, max(ys) + pad)
+
 # ---------- plate ----------
 class Plate:
     """Transparent layer with screen coordinates. On leaving the 'with' block it's scaled down and pasted on img.
-    Widths (w) are in screen px. The automatic check gets the piece's real outline."""
-    def __init__(self, img, box, ss=SS):
-        self.target = img
+    Widths (w) are in screen px. The automatic check gets the piece's real outline.
+    glow = radius in px of a neon halo around everything drawn in it (for things that move: flows, arrows, pulses)."""
+    def __init__(self, img, box, ss=SS, glow=0, glow_alpha=1.0):
+        self.target, self.glow, self.glow_alpha = img, glow, glow_alpha
+        if glow: box = (box[0] - 2 * glow, box[1] - 2 * glow, box[2] + 2 * glow, box[3] + 2 * glow)
         self.ox, self.oy = int(math.floor(box[0])), int(math.floor(box[1]))
         self.w, self.h = max(1, int(math.ceil(box[2])) - self.ox), max(1, int(math.ceil(box[3])) - self.oy)
         self.ss = ss
@@ -146,11 +193,33 @@ class Plate:
     def paste(self):
         small = self.img.convert("RGBa").resize((self.w, self.h), Image.LANCZOS).convert("RGBA")
         bb = small.getbbox()
+        if self.glow and bb: _neon(self.target, small, (self.ox, self.oy), self.glow, self.glow_alpha)
         self.target.paste(small, (self.ox, self.oy), small)
         if bb:
             from ..check import register
             register((bb[0] + self.ox, bb[1] + self.oy, bb[2] + self.ox, bb[3] + self.oy), self.target)
         return ImageDraw.Draw(self.target)
+
+def _neon(target, small, pos, radius, strength):
+    """Adds a blurred, brightened copy of the layer under it: light, not paint, so it glows on the dark sheet."""
+    import numpy as np
+    from PIL import ImageFilter
+    add = 0
+    for r, g in ((radius * .35, 1.8), (radius, 2.2)):   # a tight bright core plus a wide soft halo
+        a = np.asarray(small.filter(ImageFilter.GaussianBlur(max(1, r)))).astype(np.float32)
+        add = add + a[..., :3] * (a[..., 3:4] / 255.0) * (g * strength)
+    x, y = pos; w, h = small.size
+    X0, Y0, X1, Y1 = max(0, x), max(0, y), min(target.width, x + w), min(target.height, y + h)
+    if X1 <= X0 or Y1 <= Y0: return
+    add = add[Y0 - y:Y1 - y, X0 - x:X1 - x]
+    if target.mode == "RGB":
+        base = np.asarray(target.crop((X0, Y0, X1, Y1))).astype(np.float32)
+        target.paste(Image.fromarray(np.clip(base + add, 0, 255).astype(np.uint8)), (X0, Y0))
+    else:                                             # a transparent layer: keep the halo as soft light on it
+        al = np.clip(add.max(axis=2), 0, 255)
+        rgb = np.clip(add * 255.0 / np.maximum(al[..., None], 1), 0, 255)
+        layer = Image.fromarray(np.dstack([rgb, al]).astype(np.uint8), "RGBA")
+        target.alpha_composite(layer, (X0, Y0))
 
 # ---------- background ----------
 @lru_cache(maxsize=8)

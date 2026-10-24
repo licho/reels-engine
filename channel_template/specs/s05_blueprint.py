@@ -20,8 +20,8 @@ BOX = (40, 790, 1040, 1320)
 def titles(img, c, sink_cm):
     kicker(img, "GROUND MECHANICS", 60, 236)
     plan_stamp(img, [("sheet", f"0{c.line + 1}/03"), ("scale", "1:500")], 1020, 160)
-    headline(img, "THE CITY\nTHAT *SINKS*", 60, 290, size=104, appear=tw(c.v, 0, 1.4, 0, 1))
-    big_number(img, sink_cm, 60, 500, size=190, unit="cm a year · highest measured")
+    headline(img, "THE CITY\nTHAT *SINKS*", 60, 286, size=96, appear=tw(c.v, 0, 1.4, 0, 1))
+    big_number(img, sink_cm, 60, 530, size=160, unit="cm a year · highest measured")
 
 def hook(c):
     img, d = canvas(blueprint_bg(c.t))

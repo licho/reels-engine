@@ -80,7 +80,7 @@ The [`channel_template/`](channel_template/) folder is a minimal channel that wo
 | `furniture`, `exterior`, `screens` | neutral pieces: furniture, clock, window, house, tree, clouds, lightning, documents, phone chat, monitor, `bar_chart`, `people_grid`… |
 | `cartoon` | cartoon style (separate, see "Styles"): `Brush`, shapes (`jagged`, `spiky_blob`, `blob`, `teardrop`, `strokes`), `humans.buddy`, `exterior.campfire` |
 | `sketch` | sketch style (separate, see "Styles"): `Pen`, `humans.doodle`, money pieces (`bill`, `money_stack`, `money_pile`, `money_jar`, `money_text`), `school_desk`, `hatched_chart`, arrows, `wall_calendar`…; `everyday`: coffee cup, car, motorbike, house, phone and other everyday objects; `history`: monuments, weapons, helmets and doodle in Roman/viking/pharaoh/Greek/knight/Aztec/Maya costume; `sports`: balls, gear, awards and doodle as athletes; `finance`: bank, safe, ATM, charts, gauge, debt and savings pieces |
-| `blueprint` | blueprint style (separate, see "Styles"): technical infographic on a dark screen: `blueprint_bg`, `kicker`, `headline`, `big_number`, `callout`, `dimension`, `scale_ruler`, `plan_frame`, `pointer`, `level_mark`, `Plate`; `section`: `cross_section` (ground cut with buildings, layers, water table and sinking) |
+| `blueprint` | blueprint style (separate, see "Styles"): technical infographic on a dark screen: `blueprint_bg`, `kicker`, `headline`, `big_number`, `callout`, `dimension`, `scale_ruler`, `plan_frame`, `pointer`, `level_mark`, `plan_stamp`, `xray`, `lens_ring`, `Plate`; `section`: `cross_section` (ground cut with buildings, layers, water table and sinking) |
 | `registry` | the engine's pieces, ready to merge into the channel's `MAP`s |
 | `lazy`, `catalog` | lazy-loading catalogs and the catalog generator |
 
@@ -225,10 +225,14 @@ a = doodle(img, 560, FLOOR, .85, outfit="tie", mood="smug", arms=("hip", "point"
 calculator(img, *a["hand_l"], 140)
 ```
 
-- **Blueprint** (`reels_engine.blueprint`): minimal technical infographic, like an engineering drawing on a dark
-  screen. Dark blue-black background with a faint grid, "+" marks and dim twinkling dots; thin white lines for
-  structures, electric cyan for what moves (water, flows, mechanisms), grey for secondary things and one accent color
-  (yellow) for the key number. All lettering is monospaced and uppercase. Pieces take the image (`img`); lines are drawn
+- **Blueprint** (`reels_engine.blueprint`): minimal technical infographic, like an engineering plan on a dark
+  screen. Dark blueprint-blue sheet with a fine grid, a major grid with "+" marks and sheet coordinates (A B C… / 01
+  02…) on the margins; thin white lines for structures, electric cyan for what moves (water, flows, mechanisms) and for
+  the key number (with a soft glow, measured by a dimension line), grey for secondary things, amber for critical
+  points and red for failures. Ground layers are blue-grey and told apart by their drawing pattern, like a real
+  technical section. Its signature is the x-ray lens (`xray`): a cyan ring that shows what's hidden inside a wall, the
+  ground or a machine. A title block in a corner (`plan_stamp`) says the sheet number, scale or step. All lettering is
+  monospaced and uppercase (titles take `*words*` in cyan). Pieces take the image (`img`); lines are drawn
   on a separate layer at double size, texts straight on the image so the check sees them.
 
 ```python
@@ -250,7 +254,7 @@ the last one fills to the bottom). `buildings` (list of `(x, w, h)` inside the b
 buildings go with it, the original level stays as a grey dashed line and the soft layer gets thinner), `ruler=(px per
 unit, labelled every)` (0 at the original level, yellow marker at the surface), `reveal` (0→1 scans the section in from
 the top) and `t` (water dashes travel, droplets twinkle). It returns where things ended up (`ground`, `surface`,
-`water`, `layers`) to place callouts. The other templates of the style (size comparison, step by step, number chart,
+`water`, `layers`) to place callouts. `xray=(cx, cy, r)` hides the underground except inside the x-ray lens. The other templates of the style (size comparison, step by step, number chart,
 failure and consequences, question and answer) will build on the same pieces.
 
 Colors are tokens (`BG`, `GRID`, `WHITE`, `CYAN`, `GRAY`, `DIM`, `ACCENT`, `RISK`, `PANEL` and the ground colors). A
@@ -378,8 +382,9 @@ Versions are never rewritten: if something goes wrong, publish another one.
 
 ## Versions
 
-- **v0.14.0** — Blueprint style (`reels_engine.blueprint`): technical infographic on a dark screen (grid
-  background, monospaced titles typed letter by letter, big accent number, callouts, dimension lines, ruler, level marks)
+- **v0.14.0** — Blueprint style (`reels_engine.blueprint`): technical infographic on a dark screen (blueprint
+  grid with sheet coordinates, monospaced titles typed letter by letter, big cyan number, callouts, dimension lines,
+  ruler, level marks, title block and the x-ray lens)
   and its first template, `cross_section` (ground cut with buildings, textured layers, water table and sinking). New
   `Channel.blueprint_font`, `blueprint_font_light` and `blueprint_palette`, new example `s05_blueprint.py`. Nothing else
   changes: existing frames are identical.

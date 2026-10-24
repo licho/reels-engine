@@ -13,7 +13,7 @@ import random
 from functools import lru_cache
 
 from PIL import Image, ImageDraw
-from . import Plate, text, mix, WHITE, CYAN, GRAY, DIM, ACCENT, PANEL, GROUND, SS
+from . import Plate, text, mix, xray as xray_lens, lens_ring, WHITE, CYAN, GRAY, DIM, ACCENT, PANEL, GROUND, SS
 
 _WET = ("wet_clay", "sand_wet")
 
@@ -67,6 +67,13 @@ def _dots(w, h, seed):
     R = random.Random(seed * 7 + 1)
     return [(R.uniform(6, w - 6), R.uniform(6, h - 6), R.uniform(0, 6.3)) for _ in range(w * h // 1600)]
 
+@lru_cache(maxsize=8)
+def _cover(w, h):
+    """What the eye sees of the underground: a plain cut with the drawing convention for earth (loose hatching)."""
+    img = Image.new("RGBA", (w, h), mix(PANEL, GRAY, .12) + (255,)); d = ImageDraw.Draw(img)
+    for x in range(-h, w, 26): d.line([(x, h), (x + h, 0)], fill=mix(PANEL, GRAY, .22), width=1)
+    return img
+
 def _wave(x, k, seed): return 3 * math.sin(x / (160 + 23 * k) * 6.283 + seed + k * 1.9)
 
 def _skyline(w, top, seed):
@@ -88,8 +95,9 @@ def building(p, x, base, w, h, color=WHITE, fill=PANEL, window=None, lw=3):
             if wy + 9 < base - 6: p.rect(wx, wy, wx + 9, wy + 9, fill=win)
 
 def cross_section(img, box, layers, ground=.28, buildings=None, sink=0.0, water=None, water_x=.8, ruler=None,
-                  labels=True, reveal=1.0, t=0.0, seed=1, frame=DIM):
-    """Cross-section of the ground with buildings, textured layers, water table, ruler and sinking."""
+                  labels=True, reveal=1.0, t=0.0, seed=1, frame=DIM, xray=None, xray_label=""):
+    """Cross-section of the ground with buildings, textured layers, water table, ruler and sinking;
+    xray=(cx, cy, r) hides the underground except inside an x-ray lens."""
     x0, y0, x1, y1 = [int(v) for v in box]
     w, h = x1 - x0, y1 - y0
     gy = y0 + (ground * h if ground < 1 else ground)              # original ground level
@@ -150,7 +158,16 @@ def cross_section(img, box, layers, ground=.28, buildings=None, sink=0.0, water=
         cut = int(y0 + h * max(0.0, reveal))
         clear = Image.new("RGBA", (w, max(0, y1 - cut) + 2), (0, 0, 0, 0))
         full.paste(clear, (x0, cut))
+    if xray:                                                       # underground hidden, the lens shows it
+        cover = full.copy()
+        top = int(sy + 3)
+        cover.paste(_cover(w, max(1, y1 - top)), (x0, top))
+        lens = Image.new("RGBA", img.size, (0, 0, 0, 0))
+        xray_lens(lens, full, *xray, ring=False)
+        cover.alpha_composite(lens)
+        full = cover
     img.paste(full, (0, 0), full)
+    if xray: lens_ring(img, *xray, label=xray_label)
     out = dict(box=(x0, y0, x1, y1), ground=gy, surface=sy, water=(gy + water if water is not None else None),
                layers=bounds)
     with Plate(img, (x0 - 20, y0 - 20, x1 + 20, y1 + 20)) as p:
@@ -167,7 +184,7 @@ def cross_section(img, box, layers, ground=.28, buildings=None, sink=0.0, water=
         for k in range(3):
             ly = gy + k * px_unit * every
             if ly < vis - 10: text(img, str(k * every), x1 - 56, ly, 26, GRAY, anchor="rm")
-    if labels:
+    if labels and not xray:
         for (kind, lh, label, color), (a, b) in zip(specs, bounds):
             if label and b - a > 40 and (a + b) / 2 < vis - 10:
                 text(img, label.upper(), x0 + 24, a + 26, 24, mix(_base(kind, color), WHITE, .7), tracking=.3, anchor="lm")

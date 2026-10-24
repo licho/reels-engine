@@ -58,7 +58,8 @@ PROPS = {
                                                          "balloon")},
     # blueprint style
     **{k: f"reels_engine.blueprint:{k}" for k in ("kicker", "headline", "big_number", "callout", "dimension", "scale_ruler",
-                                                    "plan_frame", "pointer", "level_mark")},
+                                                    "plan_frame", "pointer", "level_mark", "plan_stamp", "xray",
+                                                    "lens_ring")},
     "cross_section": "reels_engine.blueprint.section",
     "sport_ball": "reels_engine.sketch.sports:ball", "sport_medal": "reels_engine.sketch.sports:medal",
     **{k: f"reels_engine.sketch.modern:{k}" for k in ("flame", "blast", "smoke", "flagpole", "palace", "warship", "map_pin",

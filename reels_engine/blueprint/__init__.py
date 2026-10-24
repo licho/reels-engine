@@ -36,17 +36,18 @@ FONT = _cfg.blueprint_font or "/usr/share/fonts/truetype/dejavu/DejaVuSansMono-B
 FONT_LIGHT = _cfg.blueprint_font_light or "/usr/share/fonts/truetype/dejavu/DejaVuSansMono.ttf"
 
 _P = {
-    "BG": (10, 14, 22), "BG2": (5, 8, 14),             # background (top, bottom)
-    "GRID": (21, 29, 42), "CROSS": (52, 64, 82), "STAR": (120, 134, 154),
-    "WHITE": (236, 240, 245), "CYAN": (60, 222, 232), "GRAY": (132, 144, 160), "DIM": (74, 86, 104),
-    "ACCENT": (246, 206, 52), "RISK": (240, 88, 64),   # key number / failures, risks, critical points
-    "PANEL": (13, 17, 25),                             # inside of diagrams (sky of a cross-section)
-    # ground layers
-    "FILL": (104, 90, 74), "CLAY": (84, 70, 56), "SAND": (122, 104, 74), "GRAVEL": (54, 70, 68),
-    "ROCK": (42, 43, 48), "WATER": (24, 60, 78),
+    "BG": (12, 27, 50), "BG2": (6, 15, 31),            # background (top, bottom): dark blueprint blue
+    "GRID": (17, 35, 61), "GRID2": (27, 50, 82),       # minor / major grid
+    "CROSS": (62, 94, 132), "STAR": (120, 146, 178),
+    "WHITE": (234, 242, 252), "CYAN": (72, 228, 242), "GRAY": (130, 152, 180), "DIM": (70, 96, 128),
+    "ACCENT": (255, 166, 40), "RISK": (255, 84, 72),   # critical points, "now" markers / failures and risks
+    "PANEL": (9, 21, 40),                              # inside of diagrams (sky of a cross-section)
+    # ground layers: blue-grey tones told apart by their drawing pattern, like a real technical section
+    "FILL": (46, 64, 90), "CLAY": (35, 53, 80), "SAND": (54, 72, 98), "GRAVEL": (27, 45, 70),
+    "ROCK": (20, 33, 54), "WATER": (14, 52, 86),
     **_cfg.blueprint_palette,
 }
-BG, BG2, GRID, CROSS, STAR = _P["BG"], _P["BG2"], _P["GRID"], _P["CROSS"], _P["STAR"]
+BG, BG2, GRID, GRID2, CROSS, STAR = (_P[k] for k in ("BG", "BG2", "GRID", "GRID2", "CROSS", "STAR"))
 WHITE, CYAN, GRAY, DIM, ACCENT, RISK, PANEL = (_P[k] for k in ("WHITE", "CYAN", "GRAY", "DIM", "ACCENT", "RISK", "PANEL"))
 GROUND = {k.lower(): _P[k] for k in ("FILL", "CLAY", "SAND", "GRAVEL", "ROCK", "WATER")}
 
@@ -153,28 +154,39 @@ class Plate:
 
 # ---------- background ----------
 @lru_cache(maxsize=8)
-def _grid(cell, top, bot, grid, cross):
-    img = Image.new("RGB", (W, H)); d = ImageDraw.Draw(img)
+def _grid(cell, top, bot):
+    # drawn one px taller and cropped: the check ignores canvases of another size, so the sheet marks don't count
+    img = Image.new("RGB", (W, H + 1)); d = ImageDraw.Draw(img)
     for y in range(H): d.line([(0, y), (W, y)], fill=mix(top, bot, y / H))
+    minor = cell // 5
     ox, oy = (W % cell) // 2, (H % cell) // 2
-    for x in range(ox, W, cell): d.line([(x, 0), (x, H)], fill=grid)
-    for y in range(oy, H, cell): d.line([(0, y), (W, y)], fill=grid)
-    for x in range(ox, W + 1, cell * 2):
-        for y in range(oy, H + 1, cell * 2):
-            d.line([(x - 9, y), (x + 9, y)], fill=cross, width=2); d.line([(x, y - 9), (x, y + 9)], fill=cross, width=2)
-    return img
+    for x in range(ox % minor, W, minor): d.line([(x, 0), (x, H)], fill=GRID)
+    for y in range(oy % minor, H, minor): d.line([(0, y), (W, y)], fill=GRID)
+    for x in range(ox, W, cell): d.line([(x, 0), (x, H)], fill=GRID2, width=2)
+    for y in range(oy, H, cell): d.line([(0, y), (W, y)], fill=GRID2, width=2)
+    for x in range(ox, W + 1, cell):
+        for y in range(oy, H + 1, cell):
+            d.line([(x - 8, y), (x + 8, y)], fill=CROSS, width=2); d.line([(x, y - 8), (x, y + 8)], fill=CROSS, width=2)
+    f = font(18)                                      # sheet coordinates, like the margins of a plan
+    for i, x in enumerate(range(ox, W - cell // 2, cell)):
+        d.text((x + cell / 2, 22), "ABCDEFGHIJ"[i % 10], font=f, fill=CROSS, anchor="mm")
+    for j, y in enumerate(range(oy, H - cell // 2, cell)):
+        d.text((16, y + cell / 2), f"{j + 1:02d}", font=f, fill=CROSS, anchor="lm")
+    return img.crop((0, 0, W, H))
 
 @lru_cache(maxsize=8)
 def _stars(n, seed):
     R = random.Random(seed)
-    return [(R.uniform(0, W), R.uniform(0, H), R.choice((1, 1, 1.5, 2, 2.5)), R.uniform(0, 6.3), R.uniform(.25, 1)) for _ in range(n)]
+    return [(R.uniform(0, W), R.uniform(0, H), R.choice((1, 1, 1.5, 2)), R.uniform(0, 6.3), R.uniform(.25, 1)) for _ in range(n)]
 
-def blueprint_bg(t=0.0, cell=120, stars=90, seed=3):
-    """Dark blue-black background with a faint grid, "+" marks and dim twinkling dots."""
-    img = _grid(cell, BG, BG2, GRID, CROSS).copy(); d = ImageDraw.Draw(img)
-    for x, y, r, ph, b in _stars(stars, seed):
-        c = mix(BG, STAR, b * (.6 + .4 * math.sin(t * 1.7 + ph)))
-        d.ellipse([x - r, y - r, x + r, y + r], fill=c)
+def blueprint_bg(t=0.0, cell=200, stars=0, seed=3):
+    """Dark blueprint-blue sheet: fine grid, major grid with "+" marks and sheet coordinates on the margins."""
+    img = _grid(cell, BG, BG2).copy()
+    if stars:
+        d = ImageDraw.Draw(img)
+        for x, y, r, ph, b in _stars(stars, seed):
+            c = mix(BG, STAR, b * (.6 + .4 * math.sin(t * 1.7 + ph)))
+            d.ellipse([x - r, y - r, x + r, y + r], fill=c)
     return img
 
 # ---------- text ----------
@@ -188,50 +200,112 @@ def text(img, s, x, y, size, fill=WHITE, bold=True, tracking=0.0, anchor="ls"):
     gap = tracking * size; ws = [f.getlength(ch) for ch in s]
     total = sum(ws) + gap * (len(s) - 1)
     x0 = x - {"l": 0, "m": total / 2, "r": total}[anchor[0]]
-    bb = d.textbbox((x0, y), s[0], font=f, anchor="l" + anchor[1])
-    for ch, w in zip(s, ws):
-        if ch.strip(): d.text((x0, y), ch, font=f, fill=fill, anchor="l" + anchor[1])
+    bb = d.textbbox((x0, y), s, font=f, anchor="l" + anchor[1])
+    base = y + d.textbbox((0, 0), s, font=f, anchor="l" + anchor[1])[1] - d.textbbox((0, 0), s, font=f, anchor="ls")[1]
+    for ch, w in zip(s, ws):                          # letter by letter on one baseline (accents don't shift them)
+        if ch.strip(): d.text((x0, base), ch, font=f, fill=fill, anchor="ls")
         x0 += w + gap
     return (bb[0], bb[1], bb[0] + total, bb[3])
 
-def kicker(img, s, x, y, size=34, color=GRAY, anchor="lt"):
-    """Small label with wide letter spacing (series or section name) above a title."""
+def kicker(img, s, x, y, size=34, color=GRAY, mark=CYAN, anchor="lt"):
+    """Small label with wide letter spacing after a cyan square (series or section name) above a title."""
+    if mark:
+        ImageDraw.Draw(img).rectangle([x, y + size * .18, x + size * .62, y + size * .8], fill=mark)
+        x += size * 1.15
     return text(img, s.upper(), x, y, size, color, tracking=.42, anchor=anchor)
 
-def headline(img, s, x, y, size=100, color=WHITE, appear=1.0, leading=1.0, cursor=CYAN):
-    """Big uppercase title ("\\n" splits lines) typed letter by letter while appear goes from 0 to 1."""
-    lines = s.upper().split("\n")
+def headline(img, s, x, y, size=100, color=WHITE, appear=1.0, leading=1.2, cursor=CYAN, highlight=CYAN):
+    """Big uppercase title ("\n" splits lines, *words* in cyan) typed letter by letter while appear goes 0 to 1."""
+    lines, hl = [], False
+    for ln in s.upper().split("\n"):
+        chars = []
+        for ch in ln:
+            if ch == "*": hl = not hl
+            else: chars.append((ch, hl))
+        lines.append(chars)
     total = sum(len(l) for l in lines); shown = int(round(max(0.0, min(1.0, appear)) * total))
     f = font(size); lh = size * leading; box = None
     for i, ln in enumerate(lines):
         part = ln[:max(0, shown)]; shown -= len(ln)
-        ly = y + i * lh
-        if part.strip():
-            bb = text(img, part, x, ly, size, color, anchor="lt")
-            box = bb if box is None else (min(box[0], bb[0]), min(box[1], bb[1]), max(box[2], bb[2]), max(box[3], bb[3]))
-        if 0 > shown > -len(ln) - 1 and appear < 1 and cursor:            # blinking block where the typing is
-            cx = x + f.getlength(part)
+        ly, cx = y + i * lh, x
+        k = 0
+        while k < len(part):                          # runs of the same color
+            j = k
+            while j < len(part) and part[j][1] == part[k][1]: j += 1
+            run = "".join(ch for ch, _ in part[k:j])
+            if run.strip():
+                bb = text(img, run, cx, ly, size, highlight if part[k][1] else color, anchor="la")
+                box = bb if box is None else (min(box[0], bb[0]), min(box[1], bb[1]), max(box[2], bb[2]), max(box[3], bb[3]))
+            cx += f.getlength(run); k = j
+        if 0 > shown > -len(ln) - 1 and appear < 1 and cursor:            # block where the typing is
             ImageDraw.Draw(img).rectangle([cx + 4, ly + size * .12, cx + 4 + size * .5, ly + size * .95], fill=cursor)
             break
     return box
 
-def big_number(img, value, x, y, size=220, unit="", color=ACCENT, unit_color=WHITE, decimals=0, underline=True,
-               anchor="l"):
-    """Key figure in the accent color, underlined, with its unit below; value can be a number (count it up with tw)."""
+def _glow(img, s, x, y, f, color, radius):
+    from PIL import ImageFilter
+    bb = ImageDraw.Draw(img).textbbox((x, y), s, font=f, anchor="lt")
+    m = int(radius * 3)
+    layer = Image.new("L", (int(bb[2] - bb[0]) + 2 * m, int(bb[3] - bb[1]) + 2 * m), 0)
+    ImageDraw.Draw(layer).text((x - bb[0] + m, y - bb[1] + m), s, font=f, fill=110, anchor="lt")
+    layer = layer.filter(ImageFilter.GaussianBlur(radius))
+    img.paste(Image.new("RGB", layer.size, color), (int(bb[0]) - m, int(bb[1]) - m), layer)
+
+def big_number(img, value, x, y, size=220, unit="", color=CYAN, unit_color=WHITE, decimals=0, underline=True,
+               anchor="l", glow=True):
+    """Key figure in cyan with a soft screen glow, measured by a dimension line under it, and its unit below;
+    value can be a number (count it up with tw)."""
     s = f"{value:,.{decimals}f}" if isinstance(value, (int, float)) else str(value)
     f = font(size); w = f.getlength(s)
     x0 = x - {"l": 0, "m": w / 2, "r": w}[anchor]
+    if glow: _glow(img, s, x0, y, f, color, size * .09)
     bb = text(img, s, x0, y, size, color, anchor="lt")
     top, bot = bb[1], bb[3]
-    if underline:
-        uy = bot + size * .1
-        with Plate(img, (x0 - 10, uy - 10, x0 + w + 10, uy + 10)) as p:
-            p.line([(x0, uy), (x0 + w * .92, uy)], color, max(3, size * .025))
-        bot = uy
+    if underline:                                     # a dimension line: the number is "measured"
+        uy, tk = bot + size * .12, size * .07
+        with Plate(img, (x0 - 10, uy - tk - 4, x0 + w + 10, uy + tk + 4)) as p:
+            p.line([(x0, uy), (x0 + w, uy)], color, max(3, size * .018))
+            for ex in (x0, x0 + w): p.line([(ex, uy - tk), (ex, uy + tk)], color, max(3, size * .018))
+        bot = uy + tk
     if unit:
-        ub = text(img, unit, x0, bot + size * .1, size * .2, unit_color, bold=False, anchor="lt")
+        ub = text(img, unit, x0, bot + size * .08, size * .2, unit_color, bold=False, anchor="lt")
         bot = ub[3]
     return (x0, top, max(x0 + w, bb[2]), bot)
+
+def plan_stamp(img, rows, x1, y0, size=22, color=GRAY, value_color=WHITE, line=DIM):
+    """Title block of a plan in a corner: rows of (label, value), right edge at x1 (sheet 2/5, scale, step…)."""
+    f, fv = font(size, False), font(size)
+    lw = max(f.getlength(a.upper()) for a, _ in rows); vw = max(fv.getlength(str(b)) for _, b in rows)
+    pad, rh = size * .6, size * 1.7
+    x0, y1 = x1 - (lw + vw + pad * 4), y0 + rh * len(rows)
+    with Plate(img, (x0 - 4, y0 - 4, x1 + 4, y1 + 4)) as p:
+        p.rect(x0, y0, x1, y1, fill=PANEL, color=line, w=2)
+        p.line([(x0 + lw + pad * 2, y0), (x0 + lw + pad * 2, y1)], line, 2)
+        for i in range(1, len(rows)): p.line([(x0, y0 + rh * i), (x1, y0 + rh * i)], line, 2)
+    for i, (a, b) in enumerate(rows):
+        cy = y0 + rh * (i + .5)
+        text(img, a.upper(), x0 + pad, cy, size, color, bold=False, anchor="lm")
+        text(img, str(b), x1 - pad, cy, size, value_color, anchor="rm")
+    return (x0, y0, x1, y1)
+
+def xray(img, hidden, cx, cy, r, color=CYAN, label="", ring=True):
+    """X-ray lens: inside the circle shows 'hidden' (an image of the same size with what's inside), ringed in cyan."""
+    m = Image.new("L", img.size, 0)
+    box = (int(cx - r - 2), int(cy - r - 2), int(cx + r + 3), int(cy + r + 3))
+    big = Image.new("L", ((box[2] - box[0]) * SS, (box[3] - box[1]) * SS), 0)
+    ImageDraw.Draw(big).ellipse([(cx - r - box[0]) * SS, (cy - r - box[1]) * SS, (cx + r - box[0]) * SS, (cy + r - box[1]) * SS], fill=255)
+    m.paste(big.resize((box[2] - box[0], box[3] - box[1]), Image.LANCZOS), box[:2])
+    img.paste(hidden, (0, 0), Image.composite(hidden.getchannel("A"), Image.new("L", m.size, 0), m) if hidden.mode == "RGBA" else m)
+    if ring: lens_ring(img, cx, cy, r, color, label)
+
+def lens_ring(img, cx, cy, r, color=CYAN, label=""):
+    """Ring of the x-ray lens: cyan circle with four ticks and an optional label on top."""
+    with Plate(img, (cx - r - 24, cy - r - 24, cx + r + 24, cy + r + 24)) as p:
+        p.circle(cx, cy, r, color=color, w=3)
+        p.circle(cx, cy, r + 9, color=mix(color, PANEL, .6), w=1.5)
+        for dx, dy in ((1, 0), (-1, 0), (0, 1), (0, -1)):
+            p.line([(cx + dx * (r - 10), cy + dy * (r - 10)), (cx + dx * (r + 18), cy + dy * (r + 18))], color, 3)
+    if label: text(img, label.upper(), cx + r * .72 + 10, cy - r * .72 - 10, 22, color, tracking=.25, anchor="lb")
 
 def callout(img, s, x, y, tx, ty, size=30, color=WHITE, line=GRAY, dot=CYAN):
     """Technical label: a dot on the point (x, y) and a leader line to the text at (tx, ty)."""

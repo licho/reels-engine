@@ -3,7 +3,7 @@
   python3 -m channel.produce specs/s05_blueprint.py check"""
 from reels_engine.core import *
 from reels_engine.motion import tw
-from reels_engine.blueprint import blueprint_bg, kicker, headline, big_number, callout, ACCENT
+from reels_engine.blueprint import blueprint_bg, kicker, headline, big_number, callout, plan_stamp, ACCENT
 from reels_engine.blueprint.section import cross_section
 
 NAME = "s05_blueprint"
@@ -19,13 +19,15 @@ BOX = (40, 790, 1040, 1320)
 
 def titles(img, c, sink_cm):
     kicker(img, "GROUND MECHANICS", 60, 236)
-    headline(img, "THE CITY\nTHAT SINKS", 60, 290, size=104, appear=tw(c.v, 0, 1.4, 0, 1))
+    plan_stamp(img, [("sheet", f"0{c.line + 1}/03"), ("scale", "1:500")], 1020, 160)
+    headline(img, "THE CITY\nTHAT *SINKS*", 60, 290, size=104, appear=tw(c.v, 0, 1.4, 0, 1))
     big_number(img, sink_cm, 60, 500, size=190, unit="cm a year · highest measured")
 
 def hook(c):
     img, d = canvas(blueprint_bg(c.t))
     titles(img, c, tw(c.lt, .6, 2.2, 0, 15))
-    cross_section(img, BOX, LAYERS, water=40, ruler=(4, 10), reveal=tw(c.lt, .4, 2.4, 0, 1), t=c.t)
+    cross_section(img, BOX, LAYERS, water=40, t=c.t,
+                  xray=(tw(c.lt, .3, 2.6, 180, 760), 1130, 150), xray_label="x-ray")      # what you don't see
     return img
 
 def clay(c):

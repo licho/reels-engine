@@ -80,6 +80,7 @@ The [`channel_template/`](channel_template/) folder is a minimal channel that wo
 | `furniture`, `exterior`, `screens` | neutral pieces: furniture, clock, window, house, tree, clouds, lightning, documents, phone chat, monitor, `bar_chart`, `people_grid`… |
 | `cartoon` | cartoon style (separate, see "Styles"): `Brush`, shapes (`jagged`, `spiky_blob`, `blob`, `teardrop`, `strokes`), `humans.buddy`, `exterior.campfire` |
 | `sketch` | sketch style (separate, see "Styles"): `Pen`, `humans.doodle`, money pieces (`bill`, `money_stack`, `money_pile`, `money_jar`, `money_text`), `school_desk`, `hatched_chart`, arrows, `wall_calendar`…; `everyday`: coffee cup, car, motorbike, house, phone and other everyday objects; `history`: monuments, weapons, helmets and doodle in Roman/viking/pharaoh/Greek/knight/Aztec/Maya costume; `sports`: balls, gear, awards and doodle as athletes; `finance`: bank, safe, ATM, charts, gauge, debt and savings pieces |
+| `blueprint` | blueprint style (separate, see "Styles"): technical infographic on a dark screen: `blueprint_bg`, `kicker`, `headline`, `big_number`, `callout`, `dimension`, `scale_ruler`, `plan_frame`, `pointer`, `level_mark`, `plan_stamp`, `xray`, `lens_ring`, `Plate` (with neon `glow`); `section`: `cross_section`; `marks`: flows, arrows, lens, tags, badges, alerts, waves, wipes, captions, brand; `charts`: readouts, bars, columns, trend, meters, icon grid, scales, timeline; `parts`: pipes, valves, pumps, tanks, faucets, gauges, meters, houses, towers, terrain; `structures`: houses, apartment block, factory, power line, bridges; `machines`: gears, engines, motor, turbines; `scale`: real-size silhouettes; `templates`: size comparison, steps, question/answer, failure chain, exploded view, schematic map |
 | `registry` | the engine's pieces, ready to merge into the channel's `MAP`s |
 | `lazy`, `catalog` | lazy-loading catalogs and the catalog generator |
 
@@ -91,7 +92,7 @@ are in Spanish because the current channels are; pass your own text to change th
 
 ## Styles
 
-The engine has three styles that can be mixed in the same video; none changes the others:
+The engine has four styles that can be mixed in the same video; none changes the others:
 
 - **Basic** (`humans`, `furniture`, `exterior`, `screens`): flat shapes with a black outline. Pieces take the
   `ImageDraw` (`d`). It's the one Datos que Asustan uses.
@@ -224,6 +225,64 @@ a = doodle(img, 560, FLOOR, .85, outfit="tie", mood="smug", arms=("hip", "point"
 calculator(img, *a["hand_l"], 140)
 ```
 
+- **Blueprint** (`reels_engine.blueprint`): minimal technical infographic, like an engineering plan on a dark
+  screen. Dark blueprint-blue sheet with a fine grid, a major grid with "+" marks and sheet coordinates (A B C… / 01
+  02…) on the margins; thin white lines for structures, electric cyan for what moves (water, flows, mechanisms) and for
+  the key number (with a soft glow, measured by a dimension line), grey for secondary things, amber for critical
+  points and red for failures. Ground layers are blue-grey and told apart by their drawing pattern, like a real
+  technical section. Its signature is the x-ray lens (`xray`): a cyan ring that shows what's hidden inside a wall, the
+  ground or a machine. A title block in a corner (`plan_stamp`) says the sheet number, scale or step. All lettering is
+  monospaced and uppercase (titles take `*words*` in cyan). Pieces take the image (`img`); lines are drawn
+  on a separate layer at double size, texts straight on the image so the check sees them.
+
+```python
+from reels_engine.blueprint import blueprint_bg, kicker, headline, big_number, callout
+from reels_engine.blueprint.section import cross_section
+img, d = canvas(blueprint_bg(c.t))
+kicker(img, "GROUND MECHANICS", 60, 236)
+headline(img, "THE CITY\nTHAT SINKS", 60, 290, appear=tw(c.v, 0, 1.4, 0, 1))     # typed letter by letter
+big_number(img, tw(c.lt, .6, 2.2, 0, 15), 60, 500, unit="cm a year")            # counts up, underlined
+a = cross_section(img, (40, 790, 1040, 1320), [("fill", 30), ("wet_clay", 190, "SOFT CLAY"), ("gravel", 110), ("rock", 0)],
+                  water=40, sink=60 * k, ruler=(4, 10), t=c.t)
+callout(img, "ground level now", 525, a["surface"], 600, 752)
+```
+
+`cross_section` is the first template of the style: a cut of the ground seen from the side. Layers go from the surface
+down as `(kind, height_px[, label])` (kinds: `fill`, `clay`, `wet_clay`, `sand`, `sand_wet`, `gravel`, `rock`, `water`;
+the last one fills to the bottom). `buildings` (list of `(x, w, h)` inside the box, default a skyline made from `seed`),
+`water` (depth of the water table in px, dashed cyan with its level symbol), `sink` (px the surface has gone down: the
+buildings go with it, the original level stays as a grey dashed line and the soft layer gets thinner), `ruler=(px per
+unit, labelled every)` (0 at the original level, yellow marker at the surface), `reveal` (0→1 scans the section in from
+the top) and `t` (water dashes travel, droplets twinkle). It returns where things ended up (`ground`, `surface`,
+`water`, `layers`) to place callouts. `xray=(cx, cy, r)` hides the underground except inside the x-ray lens. The other templates of the style (size comparison, step by step, number chart,
+failure and consequences, question and answer) are in `templates`.
+
+The rest of the kit, all taking `img` and named so they don't clash with the other styles:
+
+| Module | Pieces |
+|---|---|
+| `marks` | `trace_line`, `flow_path` (travelling dashes or dots), `path_arrow`, `force_arrow`, `zoom_lens`, `fact_tag` (fact / estimate / hypothetical), `step_badge`, `alert`, `wave_lines`, `scan_reveal`, `grid_wipe` (scene transition), `plan_caption` (captions drawn by the scene, with `CAPTIONS = False`), `brand_mark` |
+| `charts` | `readout`, `hbar_chart`, `column_chart` (bands and a moving cursor), `trend_line`, `limit_meter`, `fill_bar`, `icon_grid`, `magnitude_scale`, `split_bar`, `before_after`, `timeline` |
+| `parts` | `plan_pipe`, `pipe_cut`, `water_stream`, `water_drop`, `valve`, `pump`, `plan_tank`, `water_tower`, `faucet`, `pressure_gauge`, `water_meter`, `plan_house`, `plan_building`, `tower_section`, `plan_terrain` (and `draw_pipe`, `draw_valve`, `draw_pump`, `draw_tank`, `draw_faucet` to draw inside your own `Plate`) |
+| `structures` | `home_front`, `home_section` (house cut open with its pipe and wiring running), `apartment_block` (lit windows), `factory`, `power_line`, `beam_bridge`, `truss_bridge`, `arch_bridge`, `suspension_bridge`, `cable_stayed_bridge` (water underneath, `traffic=True` cars crossing, `forces=True` pull along the cables), `bridge(kind)` |
+| `machines` | `gear`, `gear_pair` (meshing, the small one turns faster), `piston_engine` (cut open: spark, burn, piston, crank), `electric_motor` (coils switching on, rotor spinning), `jet_engine` (cut open: cold air in, hot gas out), `wind_turbine` |
+| `scale` | `scale_person`, `scale_car`, `scale_bus`, `scale_plane`, `scale_eiffel`, `scale_field`, `scale_pool`, `silhouette(kind)`, real sizes in `SIZES` |
+| `templates` | `size_compare`, `steps`, `question_card`, `answer_card`, `failure_chain`, `exploded_view`, `schematic_map` |
+
+**Neon.** What moves glows: `Plate(img, box, glow=NEON)` adds a soft additive halo around everything drawn on that
+plate, and the moving pieces (flows, arrows, pumps, alerts, waves, chart progress) use it by default (`glow=0` turns
+it off). **Colors.** Besides cyan, the palette has `VOLT` (yellow: energy, power), `LIME` (green: good, chemistry),
+`MAGENTA` (readings, signals) and `VIOLET`; `SERIES` is the order for several series in one chart. Default on-screen
+words of some pieces (`fact_tag`, `LABELS` of `scale`, `answer_card`) are Spanish; pass your own. Full example of the
+kit: `channel_template/specs/s06_blueprint_kit.py`.
+
+Colors are tokens (`BG`, `GRID`, `WHITE`, `CYAN`, `GRAY`, `DIM`, `ACCENT`, `RISK`, `VOLT`, `LIME`, `MAGENTA`, `VIOLET`, `PANEL` and the ground colors). A
+channel changes them with `Channel.blueprint_palette` (e.g. `{"ACCENT": (255, 120, 40)}`) and the type with
+`Channel.blueprint_font` / `blueprint_font_light` (default DejaVu Sans Mono Bold / Regular; any monospaced .ttf works,
+for example JetBrains Mono). Full example: `channel_template/specs/s05_blueprint.py`. Your own pieces:
+`with Plate(img, box) as p: p.line(...); p.dashed(...); p.rect(...)` (also `p.poly`, `p.circle`, `p.hatch`, `p.clip`),
+and `text(img, ...)` for monospaced text with letter spacing.
+
 ## Camera
 
 `reels_engine.camera` films a "world" image (a scene drawn bigger than the screen, an illustration, or the frame
@@ -342,6 +401,16 @@ Versions are never rewritten: if something goes wrong, publish another one.
 
 ## Versions
 
+- **v0.14.0** — Blueprint style (`reels_engine.blueprint`): technical infographic on a dark screen (blueprint
+  grid with sheet coordinates, monospaced titles typed letter by letter, big cyan number, callouts, dimension lines,
+  ruler, level marks, title block and the x-ray lens)
+  and its first template, `cross_section` (ground cut with buildings, textured layers, water table and sinking). New
+  `Channel.blueprint_font`, `blueprint_font_light` and `blueprint_palette`, new example `s05_blueprint.py`. The full kit:
+  `marks`, `charts`, `parts`, `structures` (houses, buildings, bridges), `machines` (gears, engines, turbines), `scale`
+  and `templates` (size comparison, steps, question/answer, failure chain, exploded
+  view, schematic map), neon glow on moving pieces and extra colors (`VOLT`, `LIME`, `MAGENTA`, `VIOLET`), example
+  `s06_blueprint_kit.py`. Nothing else
+  changes: existing frames are identical.
 - **v0.13.0** — More sketch pieces: the doodle as a 1800s doctor, apothecary pill bottle, pills and newspaper
   (`reels_engine.sketch.modern`), tomato and ketchup bottle (`reels_engine.sketch.everyday`). Nothing else changes:
   existing frames are identical.

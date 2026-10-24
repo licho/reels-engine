@@ -56,13 +56,37 @@ PROPS = {
                                                          "candle_chart", "pie_chart", "gauge", "contract", "ball_and_chain",
                                                          "umbrella", "goal_thermometer", "padlock", "magnifier", "rocket",
                                                          "balloon")},
+    # blueprint style
+    **{k: f"reels_engine.blueprint:{k}" for k in ("kicker", "headline", "big_number", "callout", "dimension", "scale_ruler",
+                                                    "plan_frame", "pointer", "level_mark", "plan_stamp", "xray",
+                                                    "lens_ring")},
+    **{k: f"reels_engine.blueprint.marks:{k}" for k in ("trace_line", "flow_path", "path_arrow", "force_arrow", "zoom_lens",
+                                                          "fact_tag", "step_badge", "alert", "wave_lines", "scan_reveal",
+                                                          "grid_wipe", "plan_caption", "brand_mark")},
+    **{k: f"reels_engine.blueprint.charts:{k}" for k in ("readout", "hbar_chart", "column_chart", "trend_line", "limit_meter",
+                                                           "fill_bar", "icon_grid", "magnitude_scale", "split_bar",
+                                                           "before_after", "timeline")},
+    **{k: f"reels_engine.blueprint.parts:{k}" for k in ("plan_pipe", "pipe_cut", "water_stream", "water_drop", "valve", "pump",
+                                                          "plan_tank", "water_tower", "faucet", "pressure_gauge",
+                                                          "water_meter", "plan_house", "plan_building", "tower_section",
+                                                          "plan_terrain")},
+    **{k: f"reels_engine.blueprint.scale:{k}" for k in ("scale_person", "scale_car", "scale_bus", "scale_plane", "scale_eiffel",
+                                                          "scale_field", "scale_pool", "silhouette")},
+    **{k: f"reels_engine.blueprint.templates:{k}" for k in ("size_compare", "steps", "question_card", "answer_card",
+                                                              "failure_chain", "exploded_view", "schematic_map")},
+    **{k: f"reels_engine.blueprint.structures:{k}" for k in ("home_front", "home_section", "apartment_block", "factory",
+                                                               "power_line", "beam_bridge", "truss_bridge", "arch_bridge",
+                                                               "suspension_bridge", "cable_stayed_bridge", "bridge")},
+    **{k: f"reels_engine.blueprint.machines:{k}" for k in ("gear", "gear_pair", "piston_engine", "electric_motor",
+                                                             "jet_engine", "wind_turbine")},
+    "cross_section": "reels_engine.blueprint.section",
     "sport_ball": "reels_engine.sketch.sports:ball", "sport_medal": "reels_engine.sketch.sports:medal",
     **{k: f"reels_engine.sketch.modern:{k}" for k in ("flame", "blast", "smoke", "flagpole", "palace", "warship", "map_pin",
                                                         "pill_bottle", "pills", "newspaper")},
 }
 BACKGROUNDS = {
     "make_space": "reels_engine.motion:space_bg", "radial_bg": "reels_engine.motion",
-    "seaside_bg": "reels_engine.sketch.modern",
+    "seaside_bg": "reels_engine.sketch.modern", "blueprint_bg": "reels_engine.blueprint",
 }
 
 # old Spanish names, kept so existing channels keep working

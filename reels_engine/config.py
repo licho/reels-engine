@@ -35,6 +35,9 @@ class Channel:
     ink: tuple = (43, 36, 32)                         # ink (outlines) of the cartoon style
     sketch_ink: tuple = (24, 24, 26)                  # ink of the sketch style
     sketch_font: str = ""                 # lettering of the sketch style (big amounts); "" = font_bold
+    blueprint_font: str = ""              # bold monospaced type of the blueprint style; "" = DejaVu Sans Mono Bold
+    blueprint_font_light: str = ""        # regular monospaced type of the blueprint style; "" = DejaVu Sans Mono
+    blueprint_palette: dict = field(default_factory=dict)   # blueprint colors to change, e.g. {"ACCENT": (255, 120, 40)}
     # safe zones (y in px)
     chip1: int = 300                      # main label
     chip2: int = 420                      # second label

@@ -79,7 +79,7 @@ The [`channel_template/`](channel_template/) folder is a minimal channel that wo
 | `humans` | base character `guy`, `anchors` (head, mouth, hands…), `medal` |
 | `furniture`, `exterior`, `screens` | neutral pieces: furniture, clock, window, house, tree, clouds, lightning, documents, phone chat, monitor, `bar_chart`, `people_grid`… |
 | `cartoon` | cartoon style (separate, see "Styles"): `Brush`, shapes (`jagged`, `spiky_blob`, `blob`, `teardrop`, `strokes`), `humans.buddy`, `exterior.campfire` |
-| `sketch` | sketch style (separate, see "Styles"): `Pen`, `humans.doodle`, money pieces (`bill`, `money_stack`, `money_pile`, `money_jar`, `money_text`), `school_desk`, `hatched_chart`, arrows, `wall_calendar`…; `everyday`: coffee cup, car, motorbike, house, phone and other everyday objects; `history`: monuments, weapons, helmets and doodle in Roman/viking/pharaoh/Greek/knight/Aztec/Maya costume; `sports`: balls, gear, awards and doodle as athletes; `finance`: bank, safe, ATM, charts, gauge, debt and savings pieces |
+| `sketch` | sketch style (separate, see "Styles"): `Pen`, `humans.doodle`, money pieces (`bill`, `money_stack`, `money_pile`, `money_jar`, `money_text`), `school_desk`, `hatched_chart`, arrows, `wall_calendar`…; `everyday`: coffee cup, car, motorbike, house, phone and other everyday objects; `history`: monuments, weapons, helmets and doodle in Roman/viking/pharaoh/Greek/knight/Aztec/Maya costume; `sports`: balls, gear, awards and doodle as athletes; `finance`: bank, safe, ATM, charts, gauge, debt and savings pieces; `work`: jobs, trade tools and office things |
 | `blueprint` | blueprint style (separate, see "Styles"): technical infographic on a dark screen: `blueprint_bg`, `kicker`, `headline`, `big_number`, `callout`, `dimension`, `scale_ruler`, `plan_frame`, `pointer`, `level_mark`, `plan_stamp`, `xray`, `lens_ring`, `Plate` (with neon `glow`); `section`: `cross_section`; `marks`: flows, arrows, lens, tags, badges, alerts, waves, wipes, captions, brand; `charts`: readouts, bars, columns, trend, meters, icon grid, scales, timeline; `parts`: pipes, valves, pumps, tanks, faucets, gauges, meters, houses, towers, terrain; `structures`: houses, apartment block, factory, power line, bridges; `machines`: gears, engines, motor, turbines; `scale`: real-size silhouettes; `templates`: size comparison, steps, question/answer, failure chain, exploded view, schematic map |
 | `registry` | the engine's pieces, ready to merge into the channel's `MAP`s |
 | `lazy`, `catalog` | lazy-loading catalogs and the catalog generator |
@@ -223,6 +223,26 @@ pie_chart(img, 300, 300, 190, (50, 30, 20), labels=("50%", "30%", "20%"))
 goal_thermometer(img, 870, FLOOR - 40, 520, fill=.7, label="$5,000")
 a = doodle(img, 560, FLOOR, .85, outfit="tie", mood="smug", arms=("hip", "point"))
 calculator(img, *a["hand_l"], 140)
+```
+
+Jobs, trades and office (`reels_engine.sketch.work`): `doodle_medic`, `doodle_nurse`, `doodle_chef`, `doodle_police`,
+`doodle_firefighter`, `doodle_builder`, `doodle_scientist`, `doodle_teacher`, `doodle_farmer`, `doodle_mechanic`
+(`name` on the patch) and `doodle_pilot` dress the doodle and put a tool in its right hand where it fits (`held` =
+hammer, wrench, screwdriver, shovel, pan, roller, book, flask, clipboard or None; same `mood`, `arms`, `look` as
+`doodle`). `work_hat(kind=…)` draws a hat alone: hard_hat, chef, police, pilot, firefighter, straw, nurse, cap or
+goggles. Tools: `hammer`, `wrench`, `screwdriver`, `shovel`, `frying_pan`, `paint_roller` (grip point + `ang`), `book`,
+`flask`, `clipboard`, `toolbox`, `ladder`, `microscope`, `scissors`. Office: `office_desk` (`monitor=True`, returns the
+top y), `office_chair`, `computer_monitor` (`text`, `chart`), `filing_cabinet` (`open` = a drawer), `printer`,
+`briefcase`, `mug`, `stapler`, `sticky_note` (`text`), `folder` (`label`), `whiteboard` (`text`, `chart`),
+`potted_plant`, `water_cooler`, `desk_lamp`, `pencil_cup` and `id_badge` (`name`). No floor shadows unless
+`shadow=True`.
+
+```python
+from channel.characters import doodle_chef, doodle_builder
+from channel.props import office_desk, whiteboard
+whiteboard(img, 540, 260, 520, text="Q4 Goals")
+office_desk(img, 330, FLOOR, 400)
+doodle_builder(img, 760, FLOOR, .8, held="shovel")
 ```
 
 - **Blueprint** (`reels_engine.blueprint`): minimal technical infographic, like an engineering plan on a dark
@@ -403,6 +423,9 @@ Versions are never rewritten: if something goes wrong, publish another one.
 
 ## Versions
 
+- **v0.15.0** — Jobs, trades and office in the sketch style (`reels_engine.sketch.work`): the doodle as medic, nurse,
+  chef, police officer, firefighter, builder, scientist, teacher, farmer, mechanic or pilot; work hats; trade tools;
+  office furniture and supplies. Nothing else changes: existing frames are identical.
 - **v0.14.0** — Blueprint style (`reels_engine.blueprint`): technical infographic on a dark screen (blueprint
   grid with sheet coordinates, monospaced titles typed letter by letter, big cyan number, callouts, dimension lines,
   ruler, level marks, title block and the x-ray lens)

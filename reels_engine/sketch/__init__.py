@@ -15,7 +15,8 @@ Pieces: `humans` (doodle), `props` (money, school, charts), `everyday` (coffee, 
 `history` (pyramid, temple, weapons, helmets, doodle dressed as Roman/viking/pharaoh/Greek/knight/Aztec/Maya),
 `modern` (1800s: sultan, admiral, sailor, doctor, palace, warship, fire, smoke, pill bottle, newspaper),
 `sports` (balls, gear, trophy, podium, goal, hoop, doodle as soccer player, boxer, runner, referee…),
-`finance` (bank, safe, ATM, charts, gauge, contract, debt ball and chain, goal thermometer…).
+`finance` (bank, safe, ATM, charts, gauge, contract, debt ball and chain, goal thermometer…),
+`work` (doodle as medic, chef, police, firefighter, builder…; trade tools, work hats, office desk, chair, printer…).
 
 To draw your own pieces in this style: `with Pen(img, box, seed) as p: p.shape(...); p.stroke(...)`."""
 import copy

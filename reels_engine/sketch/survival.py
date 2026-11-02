@@ -62,91 +62,118 @@ def _fit(s, size, maxw):
 def zombie_anchors(x, y, s=1.0, look=1.0):
     """Body points of zombie (head, mouth, hands…) to place bubbles and objects on it."""
     d = 1 if look >= 0 else -1
-    hx, hy, r = x + d * 22 * s, y - 500 * s, 90 * s
-    hands = [(x + d * 150 * s, y - 372 * s), (x + d * 180 * s, y - 330 * s)]
-    return {"head": (hx, hy), "head_r": r, "mouth": (hx + d * .2 * r, hy + .42 * r), "chest": (x, y - 350 * s),
-            "hand_l": hands[0], "hand_r": hands[1], "feet": (x, y), "box": (x - 280 * s, y - 760 * s, x + 280 * s, y + 20 * s)}
+    hx, hy, r = x + d * 58 * s, y - 478 * s, 86 * s
+    return {"head": (hx, hy), "head_r": r, "mouth": (hx + d * .22 * r, hy + .45 * r), "chest": (x + d * 14 * s, y - 350 * s),
+            "hand_l": (x + d * 200 * s, y - 372 * s), "hand_r": (x + d * 186 * s, y - 318 * s), "feet": (x, y),
+            "box": (x - 280 * s, y - 760 * s, x + 300 * s, y + 20 * s)}
 
 def zombie(img, x, y, s=1.0, look=1.0, color=None, mood="hungry", stains=True, silhouette=False, t=0.0, shadow=False, seed=1):
-    """Shambling zombie in the doodle's proportions: green skin, torn clothes, both arms reaching towards 'look'
-    (1 right, -1 left). mood: hungry (open jaw), groan (half open) or blank. t makes it sway. silhouette=True draws a
-    flat grey figure (far away, at night). Returns the body points."""
+    """Hunched, shambling zombie in the doodle's proportions: grey-green skin, sunken glowing eyes, gaping jaw with
+    jagged teeth, torn clothes and both clawed arms reaching towards 'look' (1 right, -1 left). mood: hungry (jaw
+    wide open), groan (half open) or blank (shut). t makes it sway and drag its feet. silhouette=True draws a flat
+    dark figure with only the eyes glowing (far away, at night). Returns the body points."""
     d = 1 if look >= 0 else -1
     a = zombie_anchors(x, y, s, look)
     sway = math.sin(t * 2.2) * 8 * s
-    P = lambda dx, dy: (x + dx * s + sway * (-dy / 500), y + dy * s)
+    P = lambda dx, dy: (x + dx * s + sway * (-dy / 500), y + dy * s)      # dx already includes the direction
+    F = lambda dx, dy: P(dx * d, dy)                                       # dx measured forward
     rng = random.Random(seed * 7 + 3)
     skin = NIGHT if silhouette else ZOMBIE
+    dark = _shade(NIGHT, .8) if silhouette else ZOMBIE_D
     shirt = NIGHT if silhouette else (color or RAGS[seed % len(RAGS)])
-    pants = NIGHT if silhouette else _shade(DENIM, .85)
+    pants = _shade(NIGHT, .9) if silhouette else _shade(DENIM, .8)
     hx, hy = a["head"]; hx += sway; r = a["head_r"]
     with Pen(img, a["box"], seed) as p:
         if shadow: p.blob(*P(0, 2), 95 * s, 14 * s)
         step = math.sin(t * 2.2)
-        for side, k in ((-1, step), (1, -step)):
-            foot = P(30 * side + d * 14 * k, -6)
-            p.limb([P(18 * side, -250), P(22 * side + d * 8 * k, -130), foot], 22 * s, pants, 4 * s)
-            fx = 30 * side + d * 14 * k
-            p.shape(spline([P(fx - 14 * d, -2), P(fx - 12 * d, -20), P(fx + 10 * d, -22), P(fx + 34 * d, -10), P(fx + 36 * d, -2)], closed=True), DARK, w=4 * s, amp=.4)
-        # torn shirt: ragged hem and a hole
-        body = [P(-46, -418), P(46, -418), P(56, -330), P(54, -232)]
-        for k in range(7): body.append(P(54 - k * 18, -232 + (16 if k % 2 else 0) + rng.uniform(-4, 4)))
-        body += [P(-56, -330)]
+        for side, k in ((-1, step), (1, -step)):                           # legs, one dragging behind
+            fx = 30 * side + d * 14 * k - (12 * d if side == -d else 0)
+            p.limb([P(18 * side, -250), F(4 * side * d + 10 + 8 * k, -130), P(fx, -8)], 22 * s, pants, 4 * s)
+            p.shape(spline([P(fx - 14 * d, -2), P(fx - 12 * d, -20), P(fx + 10 * d, -22), P(fx + 34 * d, -10), P(fx + 36 * d, -2)],
+                           closed=True), _shade(DARK, .9), w=4 * s, amp=.4)
+
+        def arm(sh, el, hd, w):
+            hd = (hd[0] + sway, hd[1])
+            p.limb([sh, el], w * s, shirt, 4.5 * s)                            # torn sleeve
+            p.limb([el, hd], (w - 9) * s, skin, 4 * s)                          # bony forearm
+            if not silhouette:
+                p.stroke([(el[0] + d * 6 * s, el[1] - 2 * s), (el[0] + d * 22 * s, el[1] + 4 * s)], 2.5 * s, dark, amp=.2)
+            for f in (-1.5, -.5, .5, 1.5):                                     # long clawed fingers
+                base_ = (hd[0] + d * 8 * s, hd[1] + f * 6 * s)
+                tip = (hd[0] + d * 34 * s, hd[1] + f * 9 * s + 14 * s)
+                p.stroke([base_, ((base_[0] + tip[0]) / 2, (base_[1] + tip[1]) / 2 - 4 * s), tip], 5.5 * s, amp=.2)
+                if not silhouette: p.stroke([tip, (tip[0] + d * 6 * s, tip[1] + 6 * s)], 4 * s, (70, 60, 50), amp=0)
+            p.shape(ellipse(hd[0], hd[1], 15 * s, 13 * s, n=16), skin, w=4.5 * s, amp=.5)
+
+        arm(F(10, -404), F(104, -392), a["hand_l"], 24)                    # far arm, behind the body
+        T = 26                                                             # hunch: the shoulders lean forward
+        body = [F(-46 + T, -418), F(46 + T, -416), F(58 + T * .4, -330), F(54, -232)]
+        for k in range(7): body.append(F(54 - k * 18, -232 + (16 if k % 2 else 0) + rng.uniform(-4, 4)))
+        body += [F(-58 + T * .3, -330)]
         p.shape(body, shirt, w=7 * s, amp=.8)
         if not silhouette:
-            hole = ellipse(*P(-16 * d, -310), 14 * s, 18 * s, n=10)
-            p.shape(hole, skin, w=3 * s, amp=.8)
+            hole = ellipse(*F(-6, -312), 20 * s, 26 * s, n=12)
+            p.shape(hole, dark, w=3 * s, amp=.9)
+            for k in range(3):                                             # ribs through the tear
+                yy = -326 + k * 13
+                p.stroke(spline([F(-20, yy), F(-6, yy - 4), F(8, yy)]), 3 * s, (230, 226, 200), amp=.1)
             if stains:
-                for (bx, by, br) in ((20, -360, 12), (-24, -270, 9), (8 * d, -400, 7)):
-                    p.poly(p.wobble(ellipse(*P(bx, by), br * s, br * s * .8, n=12), 1.5, True), STAIN)
-            p.stroke(spline([P(-22, -418), P(0, -398), P(22, -418)]), 5 * s, amp=.5)
-        # far arm first, then the head, then the near arm
-        def arm(i, sh):
-            hd = a["hand_l" if i == 0 else "hand_r"]; hd = (hd[0] + sway, hd[1])
-            el = ((sh[0] + hd[0]) / 2 + d * 10 * s, (sh[1] + hd[1]) / 2 + 22 * s)
-            p.limb([sh, el], 26 * s, shirt, 4.5 * s)
-            p.limb([el, hd], 18 * s, skin, 4 * s)
-            for f in (-1, 0, 1):
-                tip = (hd[0] + d * 20 * s, hd[1] + f * 9 * s + 10 * s)
-                p.stroke([hd, tip], 6 * s, amp=.3)
-            p.shape(ellipse(hd[0], hd[1], 14 * s, 13 * s, n=16), skin, w=4.5 * s, amp=.5)
-        arm(0, P(-40 * d, -404))
-        head = ellipse(hx, hy, r, r * 1.04, n=64)
+                for (bx, by, br) in ((30, -372, 13), (-30, -268, 10), (20, -250, 8), (40, -405, 8)):
+                    p.poly(p.wobble(ellipse(*F(bx, by), br * s, br * s * .8, n=12), 1.5, True), STAIN)
+        p.limb([F(T, -420), (hx - d * .3 * r, hy + .7 * r)], 26 * s, skin, 4 * s)   # neck stretched forward
+        head = rotated(ellipse(hx, hy, r, r * 1.06, n=64), hx, hy, d * .18)
         p.poly(p.wobble(head, .8, True), skin)
         if not silhouette:
             with p.clip(head):
-                p.poly(ellipse(hx - d * .55 * r, hy + .45 * r, r * .95, r * .9), ZOMBIE_D)
+                p.poly(ellipse(hx - d * .55 * r, hy + .45 * r, r * .95, r * .9), dark)
                 p.poly(ellipse(hx - d * .3 * r, hy + .2 * r, r * .95, r * .95), skin)
+                for k in range(3):                                         # veins and cracks
+                    vx = hx - d * (.2 + .25 * k) * r
+                    p.stroke([(vx, hy - .95 * r), (vx + d * .06 * r, hy - .7 * r), (vx - d * .04 * r, hy - .55 * r)], .025 * r, dark, amp=.3)
         p.stroke(head, .1 * r, amp=1.2, closed=True)
-        for k in range(4):                                   # a few strands of hair
-            bx = hx - .5 * r + k * .28 * r
-            p.stroke(spline([(bx, hy - .96 * r), (bx + .06 * r, hy - 1.18 * r), (bx + .16 * r, hy - 1.22 * r)]), .05 * r, amp=.4)
-        if not silhouette:
-            fx = hx + d * .2 * r
-            for side in (-1, 1):
-                ex, ey = fx + side * .28 * r, hy - .08 * r + (side * d) * .04 * r
-                p.poly(ellipse(ex, ey, .22 * r, .25 * r, n=20), ZOMBIE_D)
-                big = side == d
-                p.shape(ellipse(ex, ey, (.17 if big else .15) * r, (.2 if big else .1) * r, n=24), WHITE, w=.045 * r, amp=.5)
-                p.poly(ellipse(ex + d * .05 * r, ey + .02 * r, .045 * r, .045 * r, n=10), INK)
-                if not big: p.stroke([(ex - .19 * r, ey - .08 * r), (ex + .19 * r, ey - .04 * r)], .05 * r, amp=.3)
-            mx, my = fx, hy + .42 * r
-            if mood in ("hungry", "groan"):
-                o = .22 if mood == "hungry" else .1
-                jaw = spline([(mx - .26 * r, my - .04 * r), (mx, my - .06 * r), (mx + .26 * r, my - .02 * r),
-                              (mx + .2 * r, my + o * r), (mx - .02 * r, my + (o + .06) * r), (mx - .22 * r, my + o * r)], closed=True)
-                p.poly(jaw, (70, 30, 34))
-                with p.clip(jaw):
-                    for k in range(-2, 3): p.poly(rrect(mx + k * .1 * r - .035 * r, my - .1 * r, mx + k * .1 * r + .035 * r, my + .03 * r, 2), (236, 230, 200))
-                p.stroke(jaw, .05 * r, amp=.5, closed=True)
-            else:
-                p.stroke([(mx - .2 * r, my + .04 * r), (mx + .2 * r, my - .02 * r)], .05 * r, amp=.4)
-            sx = hx - d * .45 * r                            # stitched scar
-            p.stroke([(sx, hy - .6 * r), (sx + d * .2 * r, hy - .3 * r)], .035 * r, STAIN, amp=.2)
-            for k in range(3):
-                q = (sx + d * .2 * r * (k + .5) / 3, hy - .6 * r + .3 * r * (k + .5) / 3)
-                p.stroke([(q[0] - .05 * r, q[1] + .03 * r), (q[0] + .05 * r, q[1] - .03 * r)], .025 * r, STAIN, amp=.1)
-        arm(1, P(40 * d, -404))
+        for k in range(5):                                                 # thin, messy hair
+            bx = hx - .55 * r + k * .24 * r
+            p.stroke(spline([(bx, hy - .98 * r), (bx - d * .1 * r, hy - 1.2 * r), (bx + d * .05 * r * (k % 2 * 2 - 1), hy - 1.32 * r)]), .045 * r, amp=.4)
+        fx = hx + d * .24 * r
+        glow = (250, 236, 120)
+        for side in (-1, 1):
+            big = side == d
+            ex, ey = fx + side * .28 * r, hy - .1 * r + (0 if big else .05 * r)
+            if silhouette:
+                p.poly(ellipse(ex, ey, .07 * r, .05 * r, n=10), glow)
+                continue
+            p.poly(ellipse(ex, ey + .02 * r, .25 * r, .24 * r, n=20), (60, 70, 52))   # sunken socket
+            p.shape(ellipse(ex, ey, (.16 if big else .12) * r, (.15 if big else .09) * r, n=24), glow, w=.04 * r, amp=.4)
+            p.poly(ellipse(ex + d * .03 * r, ey + .01 * r, .035 * r, .035 * r, n=10), (150, 20, 20))
+            inner = ex - side * .18 * r                                    # heavy angry brow, low over the eye
+            p.stroke([(ex + side * .22 * r, ey - .26 * r), (inner, ey - .14 * r)], .07 * r, amp=.3)
+        near = (F(40 + T * .6, -398), F(116, -344), a["hand_r"])
+        if silhouette:
+            arm(*near, 26)
+            a["head"] = (hx, hy)
+            return a
+        mx, my = fx, hy + .45 * r
+        o = {"hungry": .36, "groan": .2}.get(mood, 0)
+        if o:
+            jaw = spline([(mx - .3 * r, my - .1 * r), (mx, my - .14 * r), (mx + .3 * r, my - .08 * r),
+                          (mx + .24 * r, my + o * r), (mx - .02 * r, my + (o + .08) * r), (mx - .26 * r, my + o * r)], closed=True)
+            p.poly(jaw, (60, 18, 22))
+            with p.clip(jaw):
+                for k in range(-3, 4):                                     # jagged teeth, top and bottom
+                    tx = mx + k * .085 * r
+                    p.poly([(tx - .04 * r, my - .16 * r), (tx + .04 * r, my - .16 * r), (tx + (k % 2) * .01 * r, my - .02 * r - (k % 2) * .03 * r)], (236, 228, 190))
+                    p.poly([(tx - .035 * r, my + (o + .12) * r), (tx + .035 * r, my + (o + .12) * r), (tx, my + (o - .06) * r + (k % 2) * .03 * r)], (236, 228, 190))
+            p.stroke(jaw, .05 * r, amp=.5, closed=True)
+            p.stroke([(mx + .12 * r, my + (o + .04) * r), (mx + .13 * r, my + (o + .26) * r)], .03 * r, (200, 220, 200), amp=.2)   # drool
+        else:
+            p.stroke([(mx - .22 * r, my + .02 * r), (mx - .05 * r, my - .03 * r), (mx + .1 * r, my + .03 * r), (mx + .22 * r, my - .02 * r)], .05 * r, amp=.4)
+            for k in range(3): p.stroke([(mx - .12 * r + k * .12 * r, my - .07 * r), (mx - .12 * r + k * .12 * r, my + .07 * r)], .03 * r, amp=0)
+        sx = hx - d * .5 * r                                               # stitched scar
+        p.stroke([(sx, hy - .62 * r), (sx + d * .22 * r, hy - .28 * r)], .035 * r, STAIN, amp=.2)
+        for k in range(3):
+            q = (sx + d * .22 * r * (k + .5) / 3, hy - .62 * r + .34 * r * (k + .5) / 3)
+            p.stroke([(q[0] - .05 * r, q[1] + .03 * r), (q[0] + .05 * r, q[1] - .03 * r)], .025 * r, STAIN, amp=.1)
+        arm(*near, 26)                                                     # near arm, in front
     a["head"] = (hx, hy)
     return a
 

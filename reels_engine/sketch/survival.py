@@ -69,7 +69,7 @@ def zombie_anchors(x, y, s=1.0, look=1.0):
 
 def zombie(img, x, y, s=1.0, look=1.0, color=None, mood="hungry", stains=True, silhouette=False, t=0.0, shadow=False, seed=1):
     """Hunched, shambling zombie in the doodle's proportions: grey-green skin, sunken glowing eyes, gaping jaw with
-    jagged teeth, torn clothes and both clawed arms reaching towards 'look' (1 right, -1 left). mood: hungry (jaw
+    jagged teeth, torn clothes and both arms reaching, limp hands, towards 'look' (1 right, -1 left). mood: hungry (jaw
     wide open), groan (half open) or blank (shut). t makes it sway and drag its feet. silhouette=True draws a flat
     dark figure with only the eyes glowing (far away, at night). Returns the body points."""
     d = 1 if look >= 0 else -1
@@ -98,12 +98,11 @@ def zombie(img, x, y, s=1.0, look=1.0, color=None, mood="hungry", stains=True, s
             p.limb([el, hd], (w - 9) * s, skin, 4 * s)                          # bony forearm
             if not silhouette:
                 p.stroke([(el[0] + d * 6 * s, el[1] - 2 * s), (el[0] + d * 22 * s, el[1] + 4 * s)], 2.5 * s, dark, amp=.2)
-            for f in (-1.5, -.5, .5, 1.5):                                     # long clawed fingers
-                base_ = (hd[0] + d * 8 * s, hd[1] + f * 6 * s)
-                tip = (hd[0] + d * 34 * s, hd[1] + f * 9 * s + 14 * s)
-                p.stroke([base_, ((base_[0] + tip[0]) / 2, (base_[1] + tip[1]) / 2 - 4 * s), tip], 5.5 * s, amp=.2)
-                if not silhouette: p.stroke([tip, (tip[0] + d * 6 * s, tip[1] + 6 * s)], 4 * s, (70, 60, 50), amp=0)
-            p.shape(ellipse(hd[0], hd[1], 15 * s, 13 * s, n=16), skin, w=4.5 * s, amp=.5)
+            for k in range(3):                                                 # limp hand: short fingers hanging down
+                fx0 = hd[0] + d * (6 + k * 7) * s
+                p.limb([(fx0, hd[1] + 2 * s), (fx0 + d * 6 * s, hd[1] + 14 * s), (fx0 + d * 4 * s, hd[1] + 24 * s)], 6 * s, skin, 2.5 * s)
+            p.limb([(hd[0] - d * 2 * s, hd[1] - 6 * s), (hd[0] + d * 12 * s, hd[1] - 12 * s)], 6 * s, skin, 2.5 * s)   # thumb
+            p.shape(ellipse(hd[0] + d * 6 * s, hd[1], 17 * s, 12 * s, n=18), skin, w=4.5 * s, amp=.4)
 
         arm(F(16, -366), F(104, -334), a["hand_l"], 24)                    # far arm, behind the body
         T = 26                                                             # hunch: the shoulders lean forward

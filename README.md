@@ -245,8 +245,8 @@ office_desk(img, 330, FLOOR, 400)
 doodle_builder(img, 760, FLOOR, .8, held="shovel")
 ```
 
-Survival and shelters (`reels_engine.sketch.survival`): `zombie` (hunched, sunken glowing eyes, jagged teeth, torn clothes, clawed arms
-reaching towards `look`; `mood` = hungry, groan or blank; `silhouette=True` for a dark figure with glowing eyes, far away or at night; `t` makes it
+Survival and shelters (`reels_engine.sketch.survival`): `zombie` (hunched, sunken glowing eyes, jagged teeth, torn clothes, arms with limp
+hands reaching towards `look`; `mood` = hungry, groan or blank; `silhouette=True` for a dark figure with glowing eyes, far away or at night; `t` makes it
 sway and shamble; returns its body points like `doodle`), `horde` (n zombies in depth rows) and `doodle_survivor` (the
 doodle with a big backpack; `held` = flashlight, shovel, map or None). Ground and places: `soil_section` (grass,
 topsoil, earth, rock, optional water table), `bunker_section` (partly buried bunker in cross-section with stairs,
@@ -453,6 +453,7 @@ Versions are never rewritten: if something goes wrong, publish another one.
 
 ## Versions
 
+- **v0.16.1** — The sketch `zombie` gets limp hands instead of claws.
 - **v0.16.0** — Survival pieces in the sketch style: `survival` (zombie, horde, survivor, bunker cross-section,
   shelter, fence, power/water/air utilities, supplies, maps and plans), `status` (time card, inventory sheet, stat bar,
   alert box, status panel, camera monitor) and `emergency` (ambulance, police car, helicopter, bus stop, skyline).

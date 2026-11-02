@@ -17,6 +17,8 @@ CHARACTERS = {
                                                                   "scientist", "teacher", "farmer", "mechanic", "pilot")},
     **{f"doodle_{k}": f"reels_engine.sketch.sports:{k}" for k in ("soccer_player", "basketball_player", "boxer", "runner",
                                                                     "tennis_player", "baseball_player", "referee")},
+    "zombie": "reels_engine.sketch.survival", "zombie_anchors": "reels_engine.sketch.survival",
+    "horde": "reels_engine.sketch.survival", "doodle_survivor": "reels_engine.sketch.survival:survivor",
 }
 PROPS = {
     # furniture and indoor things
@@ -90,6 +92,18 @@ PROPS = {
     "sport_ball": "reels_engine.sketch.sports:ball", "sport_medal": "reels_engine.sketch.sports:medal",
     **{k: f"reels_engine.sketch.modern:{k}" for k in ("flame", "blast", "smoke", "flagpole", "palace", "warship", "map_pin",
                                                         "pill_bottle", "pills", "newspaper")},
+    **{k: f"reels_engine.sketch.survival:{k}" for k in ("soil_section", "rock", "hills", "pine_tree", "cabin", "shelter",
+                                                          "floodlight", "security_camera", "bunker_door", "bunker_section",
+                                                          "solar_panel", "battery_bank", "battery", "generator", "electrical_panel",
+                                                          "wire", "water_tank", "water_filter", "rain", "water_bottle", "jerrycan",
+                                                          "tap", "vent_fan", "air_duct", "vent_pipe", "air_flow", "air_monitor",
+                                                          "backpack", "canned_food", "supply_crate", "pantry_shelf",
+                                                          "first_aid_kit", "flashlight", "cot", "trash_bin", "flies", "trash_pile",
+                                                          "garden_bed", "paper_map", "plan_sheet", "floor_plan", "site_plan")},
+    "sketch_fence": "reels_engine.sketch.survival:fence",
+    **{k: f"reels_engine.sketch.status:{k}" for k in ("time_card", "inventory_sheet", "stat_bar", "alert_box", "status_panel",
+                                                        "camera_monitor")},
+    **{k: f"reels_engine.sketch.emergency:{k}" for k in ("ambulance", "police_car", "helicopter", "bus_stop", "skyline")},
 }
 BACKGROUNDS = {
     "make_space": "reels_engine.motion:space_bg", "radial_bg": "reels_engine.motion",

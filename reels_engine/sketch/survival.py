@@ -64,7 +64,7 @@ def zombie_anchors(x, y, s=1.0, look=1.0):
     d = 1 if look >= 0 else -1
     hx, hy, r = x + d * 58 * s, y - 478 * s, 86 * s
     return {"head": (hx, hy), "head_r": r, "mouth": (hx + d * .22 * r, hy + .45 * r), "chest": (x + d * 14 * s, y - 350 * s),
-            "hand_l": (x + d * 200 * s, y - 372 * s), "hand_r": (x + d * 186 * s, y - 318 * s), "feet": (x, y),
+            "hand_l": (x + d * 196 * s, y - 318 * s), "hand_r": (x + d * 182 * s, y - 270 * s), "feet": (x, y),
             "box": (x - 280 * s, y - 760 * s, x + 300 * s, y + 20 * s)}
 
 def zombie(img, x, y, s=1.0, look=1.0, color=None, mood="hungry", stains=True, silhouette=False, t=0.0, shadow=False, seed=1):
@@ -105,7 +105,7 @@ def zombie(img, x, y, s=1.0, look=1.0, color=None, mood="hungry", stains=True, s
                 if not silhouette: p.stroke([tip, (tip[0] + d * 6 * s, tip[1] + 6 * s)], 4 * s, (70, 60, 50), amp=0)
             p.shape(ellipse(hd[0], hd[1], 15 * s, 13 * s, n=16), skin, w=4.5 * s, amp=.5)
 
-        arm(F(10, -404), F(104, -392), a["hand_l"], 24)                    # far arm, behind the body
+        arm(F(16, -366), F(104, -334), a["hand_l"], 24)                    # far arm, behind the body
         T = 26                                                             # hunch: the shoulders lean forward
         body = [F(-46 + T, -418), F(46 + T, -416), F(58 + T * .4, -330), F(54, -232)]
         for k in range(7): body.append(F(54 - k * 18, -232 + (16 if k % 2 else 0) + rng.uniform(-4, 4)))
@@ -147,7 +147,7 @@ def zombie(img, x, y, s=1.0, look=1.0, color=None, mood="hungry", stains=True, s
             p.poly(ellipse(ex + d * .03 * r, ey + .01 * r, .035 * r, .035 * r, n=10), (150, 20, 20))
             inner = ex - side * .18 * r                                    # heavy angry brow, low over the eye
             p.stroke([(ex + side * .22 * r, ey - .26 * r), (inner, ey - .14 * r)], .07 * r, amp=.3)
-        near = (F(40 + T * .6, -398), F(116, -344), a["hand_r"])
+        near = (F(36 + T * .4, -360), F(108, -296), a["hand_r"])
         if silhouette:
             arm(*near, 26)
             a["head"] = (hx, hy)

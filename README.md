@@ -79,7 +79,7 @@ The [`channel_template/`](channel_template/) folder is a minimal channel that wo
 | `humans` | base character `guy`, `anchors` (head, mouth, hands…), `medal` |
 | `furniture`, `exterior`, `screens` | neutral pieces: furniture, clock, window, house, tree, clouds, lightning, documents, phone chat, monitor, `bar_chart`, `people_grid`… |
 | `cartoon` | cartoon style (separate, see "Styles"): `Brush`, shapes (`jagged`, `spiky_blob`, `blob`, `teardrop`, `strokes`), `humans.buddy`, `exterior.campfire` |
-| `sketch` | sketch style (separate, see "Styles"): `Pen`, `humans.doodle`, money pieces (`bill`, `money_stack`, `money_pile`, `money_jar`, `money_text`), `school_desk`, `hatched_chart`, arrows, `wall_calendar`…; `everyday`: coffee cup, car, motorbike, house, phone and other everyday objects; `history`: monuments, weapons, helmets and doodle in Roman/viking/pharaoh/Greek/knight/Aztec/Maya costume; `sports`: balls, gear, awards and doodle as athletes; `finance`: bank, safe, ATM, charts, gauge, debt and savings pieces; `work`: jobs, trade tools and office things |
+| `sketch` | sketch style (separate, see "Styles"): `Pen`, `humans.doodle`, money pieces (`bill`, `money_stack`, `money_pile`, `money_jar`, `money_text`), `school_desk`, `hatched_chart`, arrows, `wall_calendar`…; `everyday`: coffee cup, car, motorbike, house, phone and other everyday objects; `history`: monuments, weapons, helmets and doodle in Roman/viking/pharaoh/Greek/knight/Aztec/Maya costume; `sports`: balls, gear, awards and doodle as athletes; `finance`: bank, safe, ATM, charts, gauge, debt and savings pieces; `work`: jobs, trade tools and office things; `survival`: zombies, survivor, bunker cross-section, shelter, fence, utilities (power, water, air), supplies and plans; `status`: game-like status cards, bars, alerts, panels and camera monitor; `emergency`: ambulance, police car, helicopter, bus stop, burning skyline |
 | `blueprint` | blueprint style (separate, see "Styles"): technical infographic on a dark screen: `blueprint_bg`, `kicker`, `headline`, `big_number`, `callout`, `dimension`, `scale_ruler`, `plan_frame`, `pointer`, `level_mark`, `plan_stamp`, `xray`, `lens_ring`, `Plate` (with neon `glow`); `section`: `cross_section`; `marks`: flows, arrows, lens, tags, badges, alerts, waves, wipes, captions, brand; `charts`: readouts, bars, columns, trend, meters, icon grid, scales, timeline; `parts`: pipes, valves, pumps, tanks, faucets, gauges, meters, houses, towers, terrain; `structures`: houses, apartment block, factory, power line, bridges; `machines`: gears, engines, motor, turbines; `scale`: real-size silhouettes; `templates`: size comparison, steps, question/answer, failure chain, exploded view, schematic map |
 | `registry` | the engine's pieces, ready to merge into the channel's `MAP`s |
 | `lazy`, `catalog` | lazy-loading catalogs and the catalog generator |
@@ -243,6 +243,36 @@ from channel.props import office_desk, whiteboard
 whiteboard(img, 540, 260, 520, text="Q4 Goals")
 office_desk(img, 330, FLOOR, 400)
 doodle_builder(img, 760, FLOOR, .8, held="shovel")
+```
+
+Survival and shelters (`reels_engine.sketch.survival`): `zombie` (green skin, torn clothes, arms reaching towards
+`look`; `mood` = hungry, groan or blank; `silhouette=True` for a flat grey figure far away or at night; `t` makes it
+sway and shamble; returns its body points like `doodle`), `horde` (n zombies in depth rows) and `doodle_survivor` (the
+doodle with a big backpack; `held` = flashlight, shovel, map or None). Ground and places: `soil_section` (grass,
+topsoil, earth, rock, optional water table), `bunker_section` (partly buried bunker in cross-section with stairs,
+escape shaft and hatch, vent pipe, drain and gravel; `buried` = 0…1; returns the interior box to put characters in),
+`shelter` (`stage` 1…4 builds it step by step), `sketch_fence` (`kind` = chain, wood, barbed or metal; `gate`,
+`damage`), `floodlight`, `security_camera`, `bunker_door` (`open`; `kind="hatch"`), `cabin`, `pine_tree`, `rock` and
+`hills`. Utilities: `solar_panel`, `battery_bank` and `battery` (`charge`), `generator` (`running`), `electrical_panel`
+(`tripped`), `wire`, `water_tank` (`level`), `water_filter`, `rain`, `water_bottle`, `jerrycan`, `tap` (`flow`, `drip`),
+`vent_fan`, `air_duct`, `vent_pipe`, `air_flow` (moving arrows along a path) and `air_monitor` (`status`). Supplies:
+`backpack`, `canned_food`, `supply_crate`, `pantry_shelf` (`fill`), `first_aid_kit` (`open`), `flashlight`, `cot`,
+`trash_bin`, `trash_pile`, `flies` and `garden_bed` (`growth`). Plans: `paper_map` (pins, dashed route, red X),
+`plan_sheet`, `floor_plan` (labelled zones) and `site_plan` (the plot from above).
+
+Status pieces (`reels_engine.sketch.status`), like a hand-drawn game interface: `time_card` (clock + time + day),
+`inventory_sheet` (rows of label: value), `stat_bar` (red → green with the value), `alert_box`, `status_panel` (one
+light per system: ok, warn, bad, off) and `camera_monitor` (2×2 night-vision feeds with figures). City in an emergency
+(`reels_engine.sketch.emergency`): `ambulance`, `police_car` and `helicopter` (lights and rotor move with `t`),
+`bus_stop` (`damage`) and `skyline` (`fires`, `night`). Texts are always the caller's.
+
+```python
+from channel.characters import zombie, doodle_survivor
+from channel.props import bunker_section, time_card, status_panel
+time_card(img, 540, 260, 460, "06:42 AM", day="DAY 0")
+room = bunker_section(img, 540, 1100, 980, buried=.7)
+doodle_survivor(img, 400, room["floor"], .45, held="flashlight")
+status_panel(img, 540, 1550, 520, rows=[("WATER", "ok"), ("POWER", "warn", "LOW")])
 ```
 
 - **Blueprint** (`reels_engine.blueprint`): minimal technical infographic, like an engineering plan on a dark
@@ -423,6 +453,10 @@ Versions are never rewritten: if something goes wrong, publish another one.
 
 ## Versions
 
+- **v0.16.0** — Survival pieces in the sketch style: `survival` (zombie, horde, survivor, bunker cross-section,
+  shelter, fence, power/water/air utilities, supplies, maps and plans), `status` (time card, inventory sheet, stat bar,
+  alert box, status panel, camera monitor) and `emergency` (ambulance, police car, helicopter, bus stop, skyline).
+  Nothing else changes: existing frames are identical.
 - **v0.15.0** — Jobs, trades and office in the sketch style (`reels_engine.sketch.work`): the doodle as medic, nurse,
   chef, police officer, firefighter, builder, scientist, teacher, farmer, mechanic or pilot; work hats; trade tools;
   office furniture and supplies. Nothing else changes: existing frames are identical.

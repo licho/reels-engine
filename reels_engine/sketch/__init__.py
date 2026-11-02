@@ -16,7 +16,11 @@ Pieces: `humans` (doodle), `props` (money, school, charts), `everyday` (coffee, 
 `modern` (1800s: sultan, admiral, sailor, doctor, palace, warship, fire, smoke, pill bottle, newspaper),
 `sports` (balls, gear, trophy, podium, goal, hoop, doodle as soccer player, boxer, runner, referee…),
 `finance` (bank, safe, ATM, charts, gauge, contract, debt ball and chain, goal thermometer…),
-`work` (doodle as medic, chef, police, firefighter, builder…; trade tools, work hats, office desk, chair, printer…).
+`work` (doodle as medic, chef, police, firefighter, builder…; trade tools, work hats, office desk, chair, printer…),
+`survival` (zombie, horde, survivor; bunker cross-section, shelter, fence, floodlight, door and hatch; solar panel,
+batteries, generator, water tank and filter, vent fan, ducts; backpack, cans, pantry, first aid kit, flashlight,
+garden bed; paper map, floor plan, site plan…), `status` (time card, inventory sheet, stat bar, alert box, status
+panel, camera monitor), `emergency` (ambulance, police car, helicopter, bus stop, burning city skyline).
 
 To draw your own pieces in this style: `with Pen(img, box, seed) as p: p.shape(...); p.stroke(...)`."""
 import copy

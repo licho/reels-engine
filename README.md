@@ -7,6 +7,12 @@ voice sync and an automatic check of every frame (covered captions, cut or overl
 A **channel** (for example `licho/datos-asustan-videos`) is a separate repo that installs this engine, sets its
 configuration (colors, zones, output folder…) and adds its own pieces and videos.
 
+> **Reels Publisher (YouTube upload tool)** — the `publish` module uploads and schedules the author's own videos on his
+> own YouTube channels using **YouTube API Services**. By using it you agree to the
+> [YouTube Terms of Service](https://www.youtube.com/t/terms).
+> [Privacy Policy](PRIVACY.md) · [Terms of Service](TERMS.md) ·
+> [Google Privacy Policy](https://policies.google.com/privacy) · How it works: [Scheduling videos](#scheduling-videos)
+
 ## Install
 
 System requirements: Python 3.9+, `ffmpeg` and the DejaVu Sans font (`/usr/share/fonts/truetype/dejavu/`).

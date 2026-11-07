@@ -38,6 +38,8 @@ class Channel:
     blueprint_font: str = ""              # bold monospaced type of the blueprint style; "" = DejaVu Sans Mono Bold
     blueprint_font_light: str = ""        # regular monospaced type of the blueprint style; "" = DejaVu Sans Mono
     blueprint_palette: dict = field(default_factory=dict)   # blueprint colors to change, e.g. {"ACCENT": (255, 120, 40)}
+    blueprint_digit_gap: float = .28      # width of the thousands separator in "35 000" / "35,000" (fraction of the
+                                          # type size; 0 = off: a full monospaced space, which splits the number in two)
     # safe zones (y in px)
     chip1: int = 300                      # main label
     chip2: int = 420                      # second label

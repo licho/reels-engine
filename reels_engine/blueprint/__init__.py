@@ -29,6 +29,7 @@ factory, power line, bridges), `machines` (gears, piston engine, electric motor,
 To draw your own pieces in this style: `with Plate(img, box) as p: p.line(...); p.dashed(...); p.rect(...)`."""
 import math
 import random
+import re
 from contextlib import contextmanager
 from functools import lru_cache
 
@@ -41,6 +42,8 @@ SS = 2                                    # the layer is drawn at double size an
 NEON = 12                                 # default halo (px) of the things that move; glow=0 turns it off
 FONT = _cfg.blueprint_font or "/usr/share/fonts/truetype/dejavu/DejaVuSansMono-Bold.ttf"
 FONT_LIGHT = _cfg.blueprint_font_light or "/usr/share/fonts/truetype/dejavu/DejaVuSansMono.ttf"
+DIGIT_GAP = _cfg.blueprint_digit_gap      # thousands separators are drawn this narrow (fraction of the size)
+_SEP = re.compile(r"(?<=\d)[ ,\u2009\u202f](?=\d{3}(?!\d))")
 
 _P = {
     "BG": (12, 27, 50), "BG2": (6, 15, 31),            # background (top, bottom): dark blueprint blue
@@ -260,21 +263,49 @@ def blueprint_bg(t=0.0, cell=200, stars=0, seed=3):
     return img
 
 # ---------- text ----------
+def _seps(s):
+    """Positions of the thousands separators in s (a space, thin space or comma between digit groups: "35 000")."""
+    return {m.start() for m in _SEP.finditer(s)} if DIGIT_GAP else set()
+
+def textlength(s, size, bold=True):
+    """Width of a text as text() draws it (thousands separators are narrow)."""
+    f, seps = font(size, bold), _seps(s)
+    return f.getlength(s) - sum(f.getlength(s[i]) for i in seps) + DIGIT_GAP * size * len(seps)
+
+def _sep(img, ch, x, base, f, w, fill):
+    """Draws a thousands separator in its narrow slot: a comma is centered in it (pasted from a small mask, so the
+    check doesn't take it for a text over the digits), a space is just the gap."""
+    if ch != ",": return
+    l, t, r, b = f.getbbox(",", anchor="ls")
+    m = Image.new("L", (int(r - l) + 2, int(b - t) + 2), 0)
+    ImageDraw.Draw(m).text((1 - l, 1 - t), ",", font=f, fill=255, anchor="ls")
+    img.paste(fill, (int(round(x + w / 2 - m.size[0] / 2)), int(round(base + t - 1))), m)
+
 def text(img, s, x, y, size, fill=WHITE, bold=True, tracking=0.0, anchor="ls"):
     """Monospaced text; tracking = extra space between letters (fraction of the size); anchor like Pillow's.
-    Returns its box."""
-    f, d = font(size, bold), ImageDraw.Draw(img)
-    if not tracking or len(s) < 2:
+    The gap between digit groups ("35 000", "35,000") is narrow, so a big number reads as one. Returns its box."""
+    f, d, seps = font(size, bold), ImageDraw.Draw(img), _seps(s)
+    if not seps and (not tracking or len(s) < 2):
         d.text((x, y), s, font=f, fill=fill, anchor=anchor)
         return d.textbbox((x, y), s, font=f, anchor=anchor)
-    gap = tracking * size; ws = [f.getlength(ch) for ch in s]
+    gap, sw = tracking * size, DIGIT_GAP * size
+    ws = [sw if i in seps else f.getlength(ch) for i, ch in enumerate(s)]
     total = sum(ws) + gap * (len(s) - 1)
     x0 = x - {"l": 0, "m": total / 2, "r": total}[anchor[0]]
     bb = d.textbbox((x0, y), s, font=f, anchor="l" + anchor[1])
     base = y + d.textbbox((0, 0), s, font=f, anchor="l" + anchor[1])[1] - d.textbbox((0, 0), s, font=f, anchor="ls")[1]
-    for ch, w in zip(s, ws):                          # letter by letter on one baseline (accents don't shift them)
-        if ch.strip(): d.text((x0, base), ch, font=f, fill=fill, anchor="ls")
-        x0 += w + gap
+    if gap:
+        for i, (ch, w) in enumerate(zip(s, ws)):      # letter by letter on one baseline (accents don't shift them)
+            if i in seps: _sep(img, ch, x0, base, f, w, fill)
+            elif ch.strip(): d.text((x0, base), ch, font=f, fill=fill, anchor="ls")
+            x0 += w + gap
+    else:
+        k = 0
+        for i in sorted(seps) + [len(s)]:             # whole runs between the separators
+            if s[k:i].strip(): d.text((x0, base), s[k:i], font=f, fill=fill, anchor="ls")
+            x0 += sum(ws[k:i])
+            if i < len(s): _sep(img, s[i], x0, base, f, sw, fill); x0 += sw
+            k = i + 1
     return (bb[0], bb[1], bb[0] + total, bb[3])
 
 def kicker(img, s, x, y, size=34, color=GRAY, mark=CYAN, anchor="lt"):
@@ -298,10 +329,16 @@ def headline(img, s, x, y, size=100, color=WHITE, appear=1.0, leading=1.2, curso
     for i, ln in enumerate(lines):
         part = ln[:max(0, shown)]; shown -= len(ln)
         ly, cx = y + i * lh, x
+        seps = _seps("".join(ch for ch, _ in ln))     # on the whole line, so the gap doesn't jump while typing
         k = 0
         while k < len(part):                          # runs of the same color
+            if k in seps:
+                sw = DIGIT_GAP * size
+                _sep(img, part[k][0], cx, ly + f.getmetrics()[0], f, sw, highlight if part[k][1] else color)
+                cx += sw; k += 1
+                continue
             j = k
-            while j < len(part) and part[j][1] == part[k][1]: j += 1
+            while j < len(part) and part[j][1] == part[k][1] and j not in seps: j += 1
             run = "".join(ch for ch, _ in part[k:j])
             if run.strip():
                 bb = text(img, run, cx, ly, size, highlight if part[k][1] else color, anchor="la")
@@ -317,7 +354,7 @@ def _glow(img, s, x, y, f, color, radius):
     bb = ImageDraw.Draw(img).textbbox((x, y), s, font=f, anchor="lt")
     m = int(radius * 3)
     layer = Image.new("L", (int(bb[2] - bb[0]) + 2 * m, int(bb[3] - bb[1]) + 2 * m), 0)
-    ImageDraw.Draw(layer).text((x - bb[0] + m, y - bb[1] + m), s, font=f, fill=110, anchor="lt")
+    text(layer, s, x - bb[0] + m, y - bb[1] + m, f.size, 110, anchor="lt")
     layer = layer.filter(ImageFilter.GaussianBlur(radius))
     img.paste(Image.new("RGB", layer.size, color), (int(bb[0]) - m, int(bb[1]) - m), layer)
 
@@ -326,7 +363,7 @@ def big_number(img, value, x, y, size=220, unit="", color=CYAN, unit_color=WHITE
     """Key figure in cyan with a soft screen glow, measured by a dimension line under it, and its unit below;
     value can be a number (count it up with tw)."""
     s = f"{value:,.{decimals}f}" if isinstance(value, (int, float)) else str(value)
-    f = font(size); w = f.getlength(s)
+    f = font(size); w = textlength(s, size)
     x0 = x - {"l": 0, "m": w / 2, "r": w}[anchor]
     if glow: _glow(img, s, x0, y, f, color, size * .09)
     bb = text(img, s, x0, y, size, color, anchor="lt")

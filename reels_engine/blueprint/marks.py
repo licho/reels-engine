@@ -8,10 +8,11 @@ step badges, critical-point alerts, waves, a scan reveal, a grid transition, cap
     fact_tag(img, "estimate", 60, 1240)
 """
 import math
+import re
 
 from PIL import Image, ImageDraw
 from ..config import current as _current
-from . import (Plate, text, font, mix, trace, smooth, bounds, W, H, SS, NEON, WHITE, CYAN, GRAY, DIM, ACCENT, RISK,
+from . import (Plate, text, textlength, DIGIT_GAP, _SEP, font, mix, trace, smooth, bounds, W, H, SS, NEON, WHITE, CYAN, GRAY, DIM, ACCENT, RISK,
                PANEL, BG)
 
 _cfg = _current()
@@ -167,7 +168,8 @@ def plan_caption(img, s, lt, y=None, size=None, maxw=940, stagger=.11, band=True
     if not s: return
     y, size = y or _cfg.cap_y, size or 58
     f = font(size); words, hl = [], False
-    for w in s.split():
+    s = _SEP.sub(lambda m: "\u2009" if m.group() == " " else m.group(), s) if DIGIT_GAP else s   # "1 500" stays one word
+    for w in filter(None, re.split(r"[^\S\u2009]+", s)):
         parts = []
         for j, part in enumerate(w.split("*")):
             if j: hl = not hl
@@ -175,7 +177,7 @@ def plan_caption(img, s, lt, y=None, size=None, maxw=940, stagger=.11, band=True
         words.append(parts)
     sp = f.getlength(" "); lines, cur, cw = [], [], 0
     for parts in words:
-        ww = sum(f.getlength(a) for a, _ in parts)
+        ww = sum(textlength(a, size) for a, _ in parts)
         if cur and cw + sp + ww > maxw: lines.append((cur, cw)); cur, cw = [], 0
         cw += (sp if cur else 0) + ww; cur.append((parts, ww))
     if cur: lines.append((cur, cw))
@@ -196,7 +198,7 @@ def plan_caption(img, s, lt, y=None, size=None, maxw=940, stagger=.11, band=True
                 px = x
                 for a, h in parts:
                     text(img, a, px, top + li * lh + lh / 2, size, highlight if h else color, anchor="lm")
-                    px += f.getlength(a)
+                    px += textlength(a, size)
             k += 1; x += ww + sp
 
 def brand_mark(img, name, slogan="", x=None, y=None, size=64, appear=1.0, t=0.0):

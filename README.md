@@ -477,6 +477,12 @@ Versions are never rewritten: if something goes wrong, publish another one.
 
 ## Versions
 
+- **v0.19.0** — Blueprint style: the thousands separator of big numbers is narrow, so "35 000" or "35,000" reads as one
+  number instead of two (in a monospaced font a space is as wide as a digit). It works in `text`, `headline`,
+  `big_number`, the charts and `plan_caption` (where "1 500" is now one word), for spaces, thin spaces and commas
+  between digit groups; the characters stay as written. New setting `Channel.blueprint_digit_gap` (.28 of the size; `0`
+  turns it off and gives back the old look) and helper `textlength`. **Blueprint frames that show a grouped number change**;
+  everything else (other styles, blueprint frames without such numbers) is identical.
 - **v0.18.0** — New sketch piece `cargo_ship` (side view with containers on deck, hull label and waves), and
   `espresso_machine(band=(low, high))` paints a green target zone on the pressure gauge. Nothing else changes:
   existing frames are identical (`band` defaults to off).

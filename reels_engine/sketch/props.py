@@ -1,5 +1,5 @@
 """Sketch-style objects: money (bill, stack, pile, jar, big amount), school desk, stool, wallet, block arrow,
-curved arrow, hatched bar chart, calendar and dashed divider. All take the image (img) and a 'seed'.
+curved arrow, hatched bar chart, calendar, dashed divider, circle mark and open hand. All take the image (img) and a 'seed'.
 money_jar draws no floor shadow unless shadow=True."""
 import math
 from . import (Pen, WHITE, SHADE, RED, GREEN, GREEN_D, GREEN_L, MONEY, MONEY_D, GLASS, GLASS_D, WOOD, WOOD_D,
@@ -171,6 +171,25 @@ def dashed_line(img, x, y0, y1, dash=22, gap=16, color=(150, 150, 155), seed=1):
         while y < y1:
             p.stroke([(x, y), (x, min(y1, y + dash))], 3, color, amp=.3)
             y += dash + gap
+
+def circle_mark(img, cx, cy, rx=160, ry=70, w=9, color=RED, seed=1):
+    """Loose marker loop around something (circling a price, a word); the ends overlap like a quick hand circle."""
+    n = 40
+    pts = [(cx + math.cos(-2.2 + 2 * math.pi * 1.08 * k / n) * rx * (1 + .04 * k / n),
+            cy + math.sin(-2.2 + 2 * math.pi * 1.08 * k / n) * ry * (1 + .06 * k / n)) for k in range(n + 1)]
+    with Pen(img, (cx - rx * 1.2 - w, cy - ry * 1.3 - w, cx + rx * 1.2 + w, cy + ry * 1.3 + w), seed) as p:
+        p.stroke(pts, w, color, amp=1, smooth=True)
+
+def open_hand(img, cx, cy, h=200, color=WHITE, ang=0.0, seed=1):
+    """Open palm seen from the front, fingers up (covering something, stop sign); ang = tilt. Centered on the palm."""
+    R = lambda pts: rotated(pts, cx, cy, ang)
+    with Pen(img, (cx - h * .8, cy - h * .9, cx + h * .8, cy + h * .7), seed) as p:
+        for k, (dx, ln) in enumerate(((-.27, .36), (-.09, .44), (.09, .42), (.26, .32))):
+            x0 = cx + dx * h
+            p.shape(R(rrect(x0 - h * .085, cy - h * .2 - ln * h, x0 + h * .085, cy - h * .05, h * .08)), color, w=max(3, h * .03), amp=.4)
+        p.shape(R([(cx - h * .3, cy - h * .05), (cx - h * .52, cy - h * .3), (cx - h * .58, cy - h * .2), (cx - h * .4, cy + h * .12)]),
+                color, w=max(3, h * .03), amp=.4)
+        p.shape(R(rrect(cx - h * .36, cy - h * .26, cx + h * .36, cy + h * .3, h * .14)), color, w=max(3, h * .03), amp=.4)
 
 from . import cache_pieces
 cache_pieces(globals())

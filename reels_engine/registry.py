@@ -37,7 +37,7 @@ PROPS = {
     # sketch style
     **{k: f"reels_engine.sketch.props:{k}" for k in ("bill", "money_stack", "money_pile", "money_jar", "money_text", "wallet",
                                                        "school_desk", "stool", "curve_arrow", "hatched_chart",
-                                                       "wall_calendar", "dashed_line")},
+                                                       "wall_calendar", "dashed_line", "circle_mark", "open_hand")},
     "block_arrow": "reels_engine.sketch.props:arrow",
     **{k: f"reels_engine.sketch.everyday:{k}" for k in ("coffee_cup", "burger", "pizza_slice", "car", "cargo_ship", "motorbike", "bicycle",
                                                           "cloud", "sun", "phone", "tv", "light_bulb", "clock", "shopping_bag",

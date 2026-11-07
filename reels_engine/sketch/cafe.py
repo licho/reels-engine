@@ -185,8 +185,9 @@ def coffee_sack(img, cx, base, h=300, label="COFFEE", beans=True, seed=1, shadow
             p.text(str(label), cx, base - h * .42, min(h * .13, w * 1.3 / max(1, len(str(label)))), fill=APRON_D, warp=1.2)
 
 # ---------- machines and furniture ----------
-def espresso_machine(img, cx, base, w=420, color=RED, pressure=0.5, cup=True, steam=False, seed=1, shadow=False):
-    """Espresso machine with a pressure gauge (pressure = 0…1 moves the needle), group head and an optional cup."""
+def espresso_machine(img, cx, base, w=420, color=RED, pressure=0.5, cup=True, steam=False, band=None, seed=1, shadow=False):
+    """Espresso machine with a pressure gauge (pressure = 0…1 moves the needle), group head and an optional cup;
+    band = (low, high) in 0…1 paints that stretch of the dial green (a target zone)."""
     h = w * .9
     x0, x1, top = cx - w / 2, cx + w / 2, base - h
     with Pen(img, (x0 - w * .12, top - h * .4, x1 + w * .12, base + w * .05), seed) as p:
@@ -204,6 +205,11 @@ def espresso_machine(img, cx, base, w=420, color=RED, pressure=0.5, cup=True, st
         gx, gy, gr = cx, top + h * .22, h * .14
         p.shape(ellipse(gx, gy, gr * 1.15, gr * 1.15, n=36), CHROME, w=5, amp=.3)
         p.shape(ellipse(gx, gy, gr, gr, n=36), WHITE, w=3.5, amp=.2)
+        if band:
+            lo, hi = sorted(max(0.0, min(1.0, v)) for v in band)
+            arc = [math.pi * (1.15 - 1.3 * (lo + (hi - lo) * k / 12)) for k in range(13)]
+            p.poly([(gx + math.cos(a) * gr * .95, gy - math.sin(a) * gr * .95) for a in arc] +
+                   [(gx + math.cos(a) * gr * .62, gy - math.sin(a) * gr * .55) for a in reversed(arc)], GREEN)
         for k in range(7):
             a = math.pi * (1.15 - 1.3 * k / 6)
             p.stroke([(gx + math.cos(a) * gr * .74, gy - math.sin(a) * gr * .74), (gx + math.cos(a) * gr * .9, gy - math.sin(a) * gr * .9)],

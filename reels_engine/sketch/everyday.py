@@ -1,4 +1,4 @@
-"""Sketch-style everyday objects: coffee to go, car, motorbike, bicycle, house, building, tree, cloud, sun, phone,
+"""Sketch-style everyday objects: coffee to go, car, motorbike, bicycle, cargo ship, house, building, tree, cloud, sun, phone,
 laptop, TV, shopping bag and cart, credit card, coin, piggy bank, light bulb, clock, gift, burger, pizza slice,
 receipt, tomato and ketchup bottle. All take the image (img) and a 'seed'. Things on the floor draw no floor
 shadow unless shadow=True.
@@ -110,6 +110,42 @@ def car(img, cx, base, w=420, color=BLUE, seed=1, shadow=False):
         p.shape(ellipse(cx + w * .47, yt + w * .06, w * .03, w * .022, n=14), YELLOW, w=3, amp=.3)
         p.shape(ellipse(cx - w * .48, yt + w * .05, w * .018, w * .025, n=14), RED, w=3, amp=.3)
         for wx in (cx - w * .3, cx + w * .3): _wheel(p, wx, base - r, r)
+
+def cargo_ship(img, cx, base, w=560, color=RED, crates=(YELLOW, BLUE, GREEN, RED, YELLOW, BLUE), label=None,
+               waves=True, seed=1):
+    """Cargo ship seen from the side, facing right, with a row of containers on deck; label = text on the hull,
+    base = waterline."""
+    h = w * .2
+    with Pen(img, (cx - w * .58, base - w * .62, cx + w * .58, base + h * .55), seed) as p:
+        deck = base - h
+        hull = [(cx - w * .5, deck), (cx + w * .5, deck - h * .15), (cx + w * .4, base + h * .3), (cx - w * .44, base + h * .3)]
+        p.shape(hull, color, w=6, smooth=False)
+        p.stroke([(cx - w * .49, deck + h * .2), (cx + w * .48, deck + h * .05)], 4, WHITE, amp=.4)
+        bx = cx - w * .44                                          # bridge at the stern
+        p.shape([(bx, deck), (bx, deck - h * 1.25), (bx + w * .14, deck - h * 1.25), (bx + w * .14, deck)], WHITE, w=5)
+        for k in range(3):
+            wx = bx + w * (.025 + k * .04)
+            p.shape(rrect(wx, deck - h * 1.1, wx + w * .025, deck - h * .92, 2), GLASS, w=2.5, amp=.2)
+        p.shape([(bx + w * .04, deck - h * 1.25), (bx + w * .045, deck - h * 1.6), (bx + w * .085, deck - h * 1.6),
+                 (bx + w * .09, deck - h * 1.25)], DARK, w=4, smooth=False)
+        n = max(1, len(crates)); cw = w * .72 / n
+        for k, c in enumerate(crates):
+            x0 = cx - w * .27 + k * cw
+            for row in range(2 if k % 3 != 2 else 1):
+                y1 = deck - row * h * .75
+                p.shape([(x0 + 3, y1 - h * .75), (x0 + cw - 3, y1 - h * .75), (x0 + cw - 3, y1), (x0 + 3, y1)],
+                        c if row == 0 else tuple(int(v * .82) for v in c), w=4, amp=.4, smooth=False)
+                for j in (1, 2, 3):
+                    xx = x0 + cw * j / 4
+                    p.stroke([(xx, y1 - h * .66), (xx, y1 - h * .09)], 2, tuple(int(v * .7) for v in c), amp=.2)
+        if label:
+            p.text(str(label), cx + w * .02, base - h * .02, min(h * .5, w * .7 / max(1, len(str(label))) * 1.6),
+                   fill=WHITE, warp=0)
+        if waves:
+            for k in range(7):
+                x = cx - w * .54 + k * w * .165
+                p.stroke(spline([(x, base + h * .45), (x + w * .045, base + h * .32), (x + w * .09, base + h * .45)]), 4,
+                         BLUE, amp=.4)
 
 def motorbike(img, cx, base, w=360, color=RED, seed=1, shadow=False):
     """Motorbike seen from the side, facing right."""

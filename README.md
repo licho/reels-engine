@@ -85,7 +85,7 @@ The [`channel_template/`](channel_template/) folder is a minimal channel that wo
 | `humans` | base character `guy`, `anchors` (head, mouth, hands…), `medal` |
 | `furniture`, `exterior`, `screens` | neutral pieces: furniture, clock, window, house, tree, clouds, lightning, documents, phone chat, monitor, `bar_chart`, `people_grid`… |
 | `cartoon` | cartoon style (separate, see "Styles"): `Brush`, shapes (`jagged`, `spiky_blob`, `blob`, `teardrop`, `strokes`), `humans.buddy`, `exterior.campfire` |
-| `sketch` | sketch style (separate, see "Styles"): `Pen`, `humans.doodle`, money pieces (`bill`, `money_stack`, `money_pile`, `money_jar`, `money_text`), `school_desk`, `hatched_chart`, arrows, `wall_calendar`…; `everyday`: coffee cup, car, motorbike, house, phone and other everyday objects; `history`: monuments, weapons, helmets and doodle in Roman/viking/pharaoh/Greek/knight/Aztec/Maya costume; `sports`: balls, gear, awards and doodle as athletes; `finance`: bank, safe, ATM, charts, gauge, debt and savings pieces; `work`: jobs, trade tools and office things; `survival`: zombies, survivor, bunker cross-section, shelter, fence, utilities (power, water, air), supplies and plans; `status`: game-like status cards, bars, alerts, panels and camera monitor; `emergency`: ambulance, police car, helicopter, bus stop, burning skyline; `cafe`: takeaway cups S/M/L, cup meter, cup grid and stack, beans, sack, espresso machine, chalkboard menu, counter, barista and coffee shop background |
+| `sketch` | sketch style (separate, see "Styles"): `Pen`, `humans.doodle`, money pieces (`bill`, `money_stack`, `money_pile`, `money_jar`, `money_text`), `school_desk`, `hatched_chart`, arrows, `wall_calendar`…; `everyday`: coffee cup, car, cargo ship, motorbike, house, phone and other everyday objects; `history`: monuments, weapons, helmets and doodle in Roman/viking/pharaoh/Greek/knight/Aztec/Maya costume; `sports`: balls, gear, awards and doodle as athletes; `finance`: bank, safe, ATM, charts, gauge, debt and savings pieces; `work`: jobs, trade tools and office things; `survival`: zombies, survivor, bunker cross-section, shelter, fence, utilities (power, water, air), supplies and plans; `status`: game-like status cards, bars, alerts, panels and camera monitor; `emergency`: ambulance, police car, helicopter, bus stop, burning skyline; `cafe`: takeaway cups S/M/L, cup meter, cup grid and stack, beans, sack, espresso machine, chalkboard menu, counter, barista and coffee shop background |
 | `blueprint` | blueprint style (separate, see "Styles"): technical infographic on a dark screen: `blueprint_bg`, `kicker`, `headline`, `big_number`, `callout`, `dimension`, `scale_ruler`, `plan_frame`, `pointer`, `level_mark`, `plan_stamp`, `xray`, `lens_ring`, `Plate` (with neon `glow`); `section`: `cross_section`; `marks`: flows, arrows, lens, tags, badges, alerts, waves, wipes, captions, brand; `charts`: readouts, bars, columns, trend, meters, icon grid, scales, timeline; `parts`: pipes, valves, pumps, tanks, faucets, gauges, meters, houses, towers, terrain; `structures`: houses, apartment block, factory, power line, bridges; `machines`: gears, engines, motor, turbines; `scale`: real-size silhouettes; `templates`: size comparison, steps, question/answer, failure chain, exploded view, schematic map |
 | `registry` | the engine's pieces, ready to merge into the channel's `MAP`s |
 | `lazy`, `catalog` | lazy-loading catalogs and the catalog generator |
@@ -234,7 +234,7 @@ calculator(img, *a["hand_l"], 140)
 Coffee shop (`reels_engine.sketch.cafe`): `takeaway_cup` (`size` S/M/L, `label` on the sleeve), `cup_meter` (a
 clear cup that fills like a bar: `fill` 0…1, `label`, tick marks), `espresso_cup` (cup on its saucer), `cup_grid`
 (pictogram of little cups, `filled` = how many are full), `cup_stack` (tower of cups), `coffee_bean`,
-`coffee_beans` (heap), `coffee_sack` (`label`), `espresso_machine` (`pressure` 0…1 moves the gauge needle),
+`coffee_beans` (heap), `coffee_sack` (`label`), `espresso_machine` (`pressure` 0…1 moves the gauge needle, `band=(low, high)` a green target zone),
 `menu_board` (chalkboard with `title` and `(name, price)` items), `cafe_counter`, the character `doodle_barista`
 (apron and cap; `held` = cup/espresso/None) and the background `cafe_bg` (tiled wall, shelves, lamps, wooden floor).
 
@@ -477,6 +477,9 @@ Versions are never rewritten: if something goes wrong, publish another one.
 
 ## Versions
 
+- **v0.18.0** — New sketch piece `cargo_ship` (side view with containers on deck, hull label and waves), and
+  `espresso_machine(band=(low, high))` paints a green target zone on the pressure gauge. Nothing else changes:
+  existing frames are identical (`band` defaults to off).
 - **v0.17.0** — Coffee shop pieces in the sketch style (`reels_engine.sketch.cafe`): takeaway cup in sizes S/M/L,
   cup meter, espresso cup, cup grid and cup stack, coffee bean and heap, coffee sack, espresso machine with a pressure
   gauge, chalkboard menu, counter, `doodle_barista` and the `cafe_bg` background. Nothing else changes: existing

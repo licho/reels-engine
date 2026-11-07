@@ -39,7 +39,7 @@ PROPS = {
                                                        "school_desk", "stool", "curve_arrow", "hatched_chart",
                                                        "wall_calendar", "dashed_line")},
     "block_arrow": "reels_engine.sketch.props:arrow",
-    **{k: f"reels_engine.sketch.everyday:{k}" for k in ("coffee_cup", "burger", "pizza_slice", "car", "motorbike", "bicycle",
+    **{k: f"reels_engine.sketch.everyday:{k}" for k in ("coffee_cup", "burger", "pizza_slice", "car", "cargo_ship", "motorbike", "bicycle",
                                                           "cloud", "sun", "phone", "tv", "light_bulb", "clock", "shopping_bag",
                                                           "shopping_cart", "credit_card", "coin", "gift_box", "receipt",
                                                           "tomato", "ketchup_bottle")},

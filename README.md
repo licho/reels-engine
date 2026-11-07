@@ -85,7 +85,7 @@ The [`channel_template/`](channel_template/) folder is a minimal channel that wo
 | `humans` | base character `guy`, `anchors` (head, mouth, hands…), `medal` |
 | `furniture`, `exterior`, `screens` | neutral pieces: furniture, clock, window, house, tree, clouds, lightning, documents, phone chat, monitor, `bar_chart`, `people_grid`… |
 | `cartoon` | cartoon style (separate, see "Styles"): `Brush`, shapes (`jagged`, `spiky_blob`, `blob`, `teardrop`, `strokes`), `humans.buddy`, `exterior.campfire` |
-| `sketch` | sketch style (separate, see "Styles"): `Pen`, `humans.doodle`, money pieces (`bill`, `money_stack`, `money_pile`, `money_jar`, `money_text`), `school_desk`, `hatched_chart`, arrows, `wall_calendar`…; `everyday`: coffee cup, car, motorbike, house, phone and other everyday objects; `history`: monuments, weapons, helmets and doodle in Roman/viking/pharaoh/Greek/knight/Aztec/Maya costume; `sports`: balls, gear, awards and doodle as athletes; `finance`: bank, safe, ATM, charts, gauge, debt and savings pieces; `work`: jobs, trade tools and office things; `survival`: zombies, survivor, bunker cross-section, shelter, fence, utilities (power, water, air), supplies and plans; `status`: game-like status cards, bars, alerts, panels and camera monitor; `emergency`: ambulance, police car, helicopter, bus stop, burning skyline |
+| `sketch` | sketch style (separate, see "Styles"): `Pen`, `humans.doodle`, money pieces (`bill`, `money_stack`, `money_pile`, `money_jar`, `money_text`), `school_desk`, `hatched_chart`, arrows, `wall_calendar`…; `everyday`: coffee cup, car, motorbike, house, phone and other everyday objects; `history`: monuments, weapons, helmets and doodle in Roman/viking/pharaoh/Greek/knight/Aztec/Maya costume; `sports`: balls, gear, awards and doodle as athletes; `finance`: bank, safe, ATM, charts, gauge, debt and savings pieces; `work`: jobs, trade tools and office things; `survival`: zombies, survivor, bunker cross-section, shelter, fence, utilities (power, water, air), supplies and plans; `status`: game-like status cards, bars, alerts, panels and camera monitor; `emergency`: ambulance, police car, helicopter, bus stop, burning skyline; `cafe`: takeaway cups S/M/L, cup meter, cup grid and stack, beans, sack, espresso machine, chalkboard menu, counter, barista and coffee shop background |
 | `blueprint` | blueprint style (separate, see "Styles"): technical infographic on a dark screen: `blueprint_bg`, `kicker`, `headline`, `big_number`, `callout`, `dimension`, `scale_ruler`, `plan_frame`, `pointer`, `level_mark`, `plan_stamp`, `xray`, `lens_ring`, `Plate` (with neon `glow`); `section`: `cross_section`; `marks`: flows, arrows, lens, tags, badges, alerts, waves, wipes, captions, brand; `charts`: readouts, bars, columns, trend, meters, icon grid, scales, timeline; `parts`: pipes, valves, pumps, tanks, faucets, gauges, meters, houses, towers, terrain; `structures`: houses, apartment block, factory, power line, bridges; `machines`: gears, engines, motor, turbines; `scale`: real-size silhouettes; `templates`: size comparison, steps, question/answer, failure chain, exploded view, schematic map |
 | `registry` | the engine's pieces, ready to merge into the channel's `MAP`s |
 | `lazy`, `catalog` | lazy-loading catalogs and the catalog generator |
@@ -229,6 +229,24 @@ pie_chart(img, 300, 300, 190, (50, 30, 20), labels=("50%", "30%", "20%"))
 goal_thermometer(img, 870, FLOOR - 40, 520, fill=.7, label="$5,000")
 a = doodle(img, 560, FLOOR, .85, outfit="tie", mood="smug", arms=("hip", "point"))
 calculator(img, *a["hand_l"], 140)
+```
+
+Coffee shop (`reels_engine.sketch.cafe`): `takeaway_cup` (`size` S/M/L, `label` on the sleeve), `cup_meter` (a
+clear cup that fills like a bar: `fill` 0…1, `label`, tick marks), `espresso_cup` (cup on its saucer), `cup_grid`
+(pictogram of little cups, `filled` = how many are full), `cup_stack` (tower of cups), `coffee_bean`,
+`coffee_beans` (heap), `coffee_sack` (`label`), `espresso_machine` (`pressure` 0…1 moves the gauge needle),
+`menu_board` (chalkboard with `title` and `(name, price)` items), `cafe_counter`, the character `doodle_barista`
+(apron and cap; `held` = cup/espresso/None) and the background `cafe_bg` (tiled wall, shelves, lamps, wooden floor).
+
+```python
+from channel.backgrounds import cafe_bg
+from channel.characters import doodle_barista
+from channel.props import cafe_counter, takeaway_cup, cup_meter
+img = cafe_bg()
+cafe_counter(img, 540, FLOOR, 1000)
+for x, size in ((640, "S"), (790, "M"), (950, "L")): takeaway_cup(img, x, FLOOR - 300, size, label=size)
+cup_meter(img, 240, 900, 380, fill=.65, label="65%")
+doodle_barista(img, 300, FLOOR + 160, .8, held="cup")
 ```
 
 Jobs, trades and office (`reels_engine.sketch.work`): `doodle_medic`, `doodle_nurse`, `doodle_chef`, `doodle_police`,
@@ -459,6 +477,10 @@ Versions are never rewritten: if something goes wrong, publish another one.
 
 ## Versions
 
+- **v0.17.0** — Coffee shop pieces in the sketch style (`reels_engine.sketch.cafe`): takeaway cup in sizes S/M/L,
+  cup meter, espresso cup, cup grid and cup stack, coffee bean and heap, coffee sack, espresso machine with a pressure
+  gauge, chalkboard menu, counter, `doodle_barista` and the `cafe_bg` background. Nothing else changes: existing
+  frames are identical.
 - **v0.16.1** — The sketch `zombie` gets limp hands instead of claws.
 - **v0.16.0** — Survival pieces in the sketch style: `survival` (zombie, horde, survivor, bunker cross-section,
   shelter, fence, power/water/air utilities, supplies, maps and plans), `status` (time card, inventory sheet, stat bar,

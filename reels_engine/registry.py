@@ -19,6 +19,7 @@ CHARACTERS = {
                                                                     "tennis_player", "baseball_player", "referee")},
     "zombie": "reels_engine.sketch.survival", "zombie_anchors": "reels_engine.sketch.survival",
     "horde": "reels_engine.sketch.survival", "doodle_survivor": "reels_engine.sketch.survival:survivor",
+    "doodle_barista": "reels_engine.sketch.cafe:barista",
 }
 PROPS = {
     # furniture and indoor things
@@ -104,10 +105,14 @@ PROPS = {
     **{k: f"reels_engine.sketch.status:{k}" for k in ("time_card", "inventory_sheet", "stat_bar", "alert_box", "status_panel",
                                                         "camera_monitor")},
     **{k: f"reels_engine.sketch.emergency:{k}" for k in ("ambulance", "police_car", "helicopter", "bus_stop", "skyline")},
+    **{k: f"reels_engine.sketch.cafe:{k}" for k in ("takeaway_cup", "cup_meter", "espresso_cup", "cup_grid", "cup_stack",
+                                                      "coffee_bean", "coffee_beans", "coffee_sack", "espresso_machine",
+                                                      "menu_board", "cafe_counter")},
 }
 BACKGROUNDS = {
     "make_space": "reels_engine.motion:space_bg", "radial_bg": "reels_engine.motion",
     "seaside_bg": "reels_engine.sketch.modern", "blueprint_bg": "reels_engine.blueprint",
+    "cafe_bg": "reels_engine.sketch.cafe",
 }
 
 # old Spanish names, kept so existing channels keep working

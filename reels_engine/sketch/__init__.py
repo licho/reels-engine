@@ -20,7 +20,9 @@ Pieces: `humans` (doodle), `props` (money, school, charts), `everyday` (coffee, 
 `survival` (zombie, horde, survivor; bunker cross-section, shelter, fence, floodlight, door and hatch; solar panel,
 batteries, generator, water tank and filter, vent fan, ducts; backpack, cans, pantry, first aid kit, flashlight,
 garden bed; paper map, floor plan, site plan…), `status` (time card, inventory sheet, stat bar, alert box, status
-panel, camera monitor), `emergency` (ambulance, police car, helicopter, bus stop, burning city skyline).
+panel, camera monitor), `emergency` (ambulance, police car, helicopter, bus stop, burning city skyline),
+`cafe` (takeaway cup S/M/L, cup meter, espresso cup, cup grid and stack, beans, sack, espresso machine, chalkboard
+menu, counter, doodle as barista, coffee shop background).
 
 To draw your own pieces in this style: `with Pen(img, box, seed) as p: p.shape(...); p.stroke(...)`."""
 import copy

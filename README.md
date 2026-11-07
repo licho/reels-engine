@@ -477,6 +477,8 @@ Versions are never rewritten: if something goes wrong, publish another one.
 
 ## Versions
 
+- **v0.19.0** — New sketch pieces `circle_mark` (loose marker loop around something, like circling a price) and
+  `open_hand` (open palm, fingers up, to cover something). Nothing else changes: existing frames are identical.
 - **v0.18.0** — New sketch piece `cargo_ship` (side view with containers on deck, hull label and waves), and
   `espresso_machine(band=(low, high))` paints a green target zone on the pressure gauge. Nothing else changes:
   existing frames are identical (`band` defaults to off).

@@ -234,7 +234,7 @@ calculator(img, *a["hand_l"], 140)
 Coffee shop (`reels_engine.sketch.cafe`): `takeaway_cup` (`size` S/M/L, `label` on the sleeve), `cup_meter` (a
 clear cup that fills like a bar: `fill` 0…1, `label`, tick marks), `espresso_cup` (cup on its saucer), `cup_grid`
 (pictogram of little cups, `filled` = how many are full), `cup_stack` (tower of cups), `coffee_bean`,
-`coffee_beans` (heap), `coffee_sack` (`label`), `espresso_machine` (`pressure` 0…1 moves the gauge needle, `band=(low, high)` a green target zone),
+`coffee_beans` (heap), `bean_jar` (`fill` 0…1, `label`, `mark`/`mark_label` = dashed minimum line), `coffee_sack` (`label`), `espresso_machine` (`pressure` 0…1 moves the gauge needle, `band=(low, high)` a green target zone),
 `menu_board` (chalkboard with `title` and `(name, price)` items), `cafe_counter`, the character `doodle_barista`
 (apron and cap; `held` = cup/espresso/None) and the background `cafe_bg` (tiled wall, shelves, lamps, wooden floor).
 
@@ -477,6 +477,8 @@ Versions are never rewritten: if something goes wrong, publish another one.
 
 ## Versions
 
+- **v0.20.0** — New sketch piece `bean_jar`: a glass jar of coffee beans filled up to a level, with a tag on the lid
+  and an optional dashed line (`mark`, `mark_label`) for a required minimum. Existing frames don't change.
 - **v0.19.0** — Blueprint style: the thousands separator of big numbers is narrow, so "35 000" or "35,000" reads as one
   number instead of two (in a monospaced font a space is as wide as a digit). It works in `text`, `headline`,
   `big_number`, the charts and `plan_caption` (where "1 500" is now one word), for spaces, thin spaces and commas

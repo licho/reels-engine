@@ -1,5 +1,5 @@
 """Sketch-style coffee shop: takeaway cup in sizes S/M/L, cup meter (a clear cup that fills like a bar), espresso cup
-with saucer, cup grid and cup stack (to count in cups), coffee bean and bean heap, coffee sack, espresso machine with
+with saucer, cup grid and cup stack (to count in cups), coffee bean and bean heap, jar of beans, coffee sack, espresso machine with
 a pressure gauge, chalkboard menu, shop counter, the doodle as a barista and a coffee shop background. All take the
 image (img) and a 'seed'. Things on the floor draw no floor shadow unless shadow=True.
 
@@ -163,6 +163,41 @@ def coffee_beans(img, cx, base, w=260, n=14, seed=1):
                 _bean(p, bx, by, r, (k * 1.3) % math.pi - .8, w=3)
                 k += 1; placed += 1
             row += 1
+
+def bean_jar(img, cx, base, w=300, h=420, fill=.8, label=None, mark=None, mark_label=None, mark_color=RED, seed=1,
+             shadow=False):
+    """Glass jar of coffee beans on y=base, filled up to 'fill' (0…1); label = tag on the lid band; mark = level (0…1) of
+    a dashed line (e.g. a required minimum) with mark_label written beside it."""
+    x0, x1, y0 = cx - w / 2, cx + w / 2, base - h
+    with Pen(img, (x0 - w * .5, y0 - h * .12, x1 + w * .7, base + w * .1), seed) as p:
+        if shadow: p.blob(cx, base, w * .6, w * .07, SHADE)
+        body = rrect(x0, y0 + h * .1, x1, base, w * .18)
+        p.poly(p.wobble(body, .6, True), GLASS)
+        if fill > 0:
+            r = max(8, w * .05)
+            top = base - (h * .88) * min(1, fill)
+            with p.clip(body):
+                p.poly([(x0 - 5, top + r * .6), (x1 + 5, top + r * .6), (x1 + 5, base + 5), (x0 - 5, base + 5)], BEAN_D)
+                y, k = base - r * .7, 0
+                while y > top:
+                    x = x0 + (k % 2) * r * .9
+                    while x < x1 + r:
+                        _bean(p, x + p.rng.uniform(-r * .2, r * .2), y, r, p.rng.uniform(-1.2, 1.2), w=2.5)
+                        x += r * 1.75
+                    y -= r * 1.2; k += 1
+        p.stroke([(x0 + w * .1, y0 + h * .25), (x0 + w * .1, base - h * .2)], w * .04, WHITE, amp=.8)   # glints
+        p.stroke(body, 6, amp=1, closed=True)
+        p.shape(rrect(x0 + w * .04, y0, x1 - w * .04, y0 + h * .12, 10), WOOD, w=5, amp=.6)        # lid
+        if label:
+            p.text(str(label), cx, y0 + h * .06, min(h * .075, w * 1.4 / max(1, len(str(label)))), fill=WHITE, warp=.6)
+        if mark is not None:
+            my = base - (h * .88) * mark
+            x = x0 - w * .08
+            while x < x1 + w * .08:
+                p.stroke([(x, my), (min(x + w * .07, x1 + w * .08), my)], 6, mark_color, amp=.3)
+                x += w * .11
+            if mark_label:
+                p.text(str(mark_label), x1 + w * .32, my, h * .07, fill=mark_color, warp=.6)
 
 def coffee_sack(img, cx, base, h=300, label="COFFEE", beans=True, seed=1, shadow=False):
     """Open burlap sack full of coffee beans; label = text stamped on it."""

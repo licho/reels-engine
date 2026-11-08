@@ -106,7 +106,7 @@ PROPS = {
                                                         "camera_monitor")},
     **{k: f"reels_engine.sketch.emergency:{k}" for k in ("ambulance", "police_car", "helicopter", "bus_stop", "skyline")},
     **{k: f"reels_engine.sketch.cafe:{k}" for k in ("takeaway_cup", "cup_meter", "espresso_cup", "cup_grid", "cup_stack",
-                                                      "coffee_bean", "coffee_beans", "coffee_sack", "espresso_machine",
+                                                      "coffee_bean", "coffee_beans", "bean_jar", "coffee_sack", "espresso_machine",
                                                       "menu_board", "cafe_counter")},
 }
 BACKGROUNDS = {
